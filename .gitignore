@@ -1,0 +1,75 @@
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+
+# Visual Studio cache/options
+.vscode/
+*.rsuser
+*.sln.docstates
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# NuGet package restore
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Code coverage
+coverage/
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Generated files
+GeneratedFiles/
+Generated/
+*.generated.cs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local configuration / secrets
+appsettings.Development.json
+appsettings.Local.json
+.env
+.env.*
+
+# Azure / publish profiles
+PublishProfiles/
+*.publishsettings
