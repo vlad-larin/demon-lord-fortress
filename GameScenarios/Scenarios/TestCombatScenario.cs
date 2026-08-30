@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Factories.Combatants;
 using GameCore.Models;
 using GameScenarios.Attributes;
 
@@ -9,29 +10,14 @@ namespace GameScenarios.Scenarios
     {
         public override GameInstance StartScenario()
         {
-            var paladin = new Combatant
-            {
-                Class = CharacterClass.Paladin,
-                Side = ConflictSide.Enemy,
-            };
-            var wizard = new Combatant { Class = CharacterClass.Wizard, Side = ConflictSide.Enemy };
-            var rogue = new Combatant { Class = CharacterClass.Rogue, Side = ConflictSide.Enemy };
+            var paladin = PaladinFactory.BuildCombatant();
+            var fighter = FighterFactory.BuildCombatant();
+            var wizard = WizardFactory.BuildCombatant();
+            var rogue = RogueFactory.BuildCombatant();
 
-            var cultist = new Combatant
-            {
-                Class = CharacterClass.Cultist,
-                Side = ConflictSide.Player,
-            };
-            var boneKnight = new Combatant
-            {
-                Class = CharacterClass.BoneKnight,
-                Side = ConflictSide.Player,
-            };
-            var vampire = new Combatant
-            {
-                Class = CharacterClass.Vampire,
-                Side = ConflictSide.Player,
-            };
+            var cultist = CultistFactory.BuildCombatant();
+            var boneKnight = BoneKnightFactory.BuildCombatant();
+            var vampire = VampireFactory.BuildCombatant();
 
             return new GameInstance
             {
@@ -50,17 +36,12 @@ namespace GameScenarios.Scenarios
                     Combatants = new List<Combatant>
                     {
                         paladin,
+                        fighter,
                         wizard,
                         rogue,
                         cultist,
                         boneKnight,
                         vampire,
-                    },
-                    Intents = new List<CombatIntent>
-                    {
-                        new CombatIntent { Combatant = paladin },
-                        new CombatIntent { Combatant = wizard },
-                        new CombatIntent { Combatant = rogue },
                     },
                 },
             };
