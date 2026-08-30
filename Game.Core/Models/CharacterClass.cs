@@ -3,6 +3,7 @@
     public enum CharacterClass
     {
         Unknown,
+        Fighter,
         Paladin,
         Wizard,
         Rogue,

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GameConsoleApp.Models;
 using GameCore.ObservableStates;
 using GameCore.PlayerActions;
 
-namespace GameConsoleApp.Renderers
+namespace GameConsoleApp.StateHandlers
 {
     public static class TitleModeHandler
     {

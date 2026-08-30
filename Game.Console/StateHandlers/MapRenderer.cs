@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameCore.ObservableStates;
 
-namespace GameConsoleApp.Renderers
+namespace GameConsoleApp.StateHandlers
 {
     public class MapRenderer
     {

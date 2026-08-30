@@ -3,7 +3,7 @@
     public enum ConflictSide
     {
         Unknown,
-        Player,
-        Enemy,
+        DemonLord,
+        Heroes,
     }
 }

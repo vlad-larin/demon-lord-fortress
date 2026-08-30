@@ -1,6 +1,6 @@
 ﻿using System;
 using GameConsoleApp.Models;
-using GameConsoleApp.Renderers;
+using GameConsoleApp.StateHandlers;
 using GameCore.Models;
 using GameCore.ObservableStates;
 using GameCore.PlayerActions;
@@ -63,7 +63,7 @@ namespace GameConsoleApp
                     TitleModeHandler.RenderState((TitleState)state);
                     break;
                 case GameMode.Encounter:
-                    EncounterRenderer.RenderState((EncounterState)state);
+                    EncounterModeHandler.RenderState((EncounterState)state);
                     break;
                 case GameMode.Map:
                     MapRenderer.RenderState(state);
@@ -84,7 +84,10 @@ namespace GameConsoleApp
             {
                 case GameMode.Title:
                     return TitleModeHandler.ProcessKey(key, (TitleState)state);
+                case GameMode.Encounter:
+                    return EncounterModeHandler.ProcessKey(key, (EncounterState)state);
                 default:
+
                     throw new NotImplementedException(
                         $"[ProcessKey] Unknown game mode: {state.GameMode}"
                     );
