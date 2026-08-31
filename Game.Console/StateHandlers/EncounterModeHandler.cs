@@ -128,46 +128,6 @@ namespace GameConsoleApp.StateHandlers
             return GameModeHandlerResponse.NoAction();
         }
 
-        private List<IntentSlot> GetAvailableSlots()
-        {
-            var list = new List<IntentSlot>();
-            for (var i = 0; i < State.Encounter.Intents.Count; i++)
-            {
-                var intent = State.Encounter.Intents[i];
-                var previousIntent = i == 0 ? null : State.Encounter.Intents[i - 1];
-
-                if (
-                    intent.Actor.Side == ConflictSide.Heroes
-                    && previousIntent?.Actor.Side == ConflictSide.Heroes
-                )
-                {
-                    list.Add(new IntentSlot(i, null));
-                }
-                else if (intent.Actor.Side == ConflictSide.DemonLord)
-                {
-                    list.Add(new IntentSlot(i, intent));
-                }
-            }
-
-            return list;
-        }
-
-        private class IntentSlot
-        {
-            public int Index { get; private set; }
-
-            /// <summary>
-            /// null is for inserts and populated value is for overwriting
-            /// </summary>
-            public CombatIntent Intent { get; private set; }
-
-            public IntentSlot(int index, CombatIntent intent)
-            {
-                Index = index;
-                Intent = intent;
-            }
-        }
-
         private Combatant[] GetMonsters() =>
             State.Encounter.Combatants.Where(x => x.Side == ConflictSide.DemonLord).ToArray();
 
@@ -189,43 +149,7 @@ namespace GameConsoleApp.StateHandlers
             }
             else if (innerState == InnerState.ChooseActionPosition)
             {
-                if (key.Key == ConsoleKey.Escape)
-                {
-                    selectedAction = null;
-                    innerState = InnerState.ChooseMonster;
-                    return GameModeHandlerResponse.NoAction();
-                }
-                else if (int.TryParse(option, out var optionNumber) && optionNumber > 0)
-                //    && optionNumber <= selectedMonster.Actions.Count
-                //)
-                {
-                    var availableSlots = GetAvailableSlots();
-                    if (optionNumber > availableSlots.Count)
-                    {
-                        return GameModeHandlerResponse.NoAction();
-                    }
-
-                    var selectedSlot = availableSlots[optionNumber - 1];
-                    if (selectedSlot.Intent == null)
-                    {
-                        return new GameModeHandlerResponse()
-                        {
-                            ActionType = GameModeHandlerActionType.Execute,
-                            Action = new InsertCombatActionIntoBattlePlan(
-                                intent: new CombatIntent
-                                {
-                                    Actor = selectedMonster,
-                                    Action = selectedAction,
-                                },
-                                index: selectedSlot.Index,
-                                actorId: selectedMonster.Id,
-                                targetId: selectedTarget.Id
-                            ),
-                        };
-                    }
-                }
-
-                return GameModeHandlerResponse.NoAction();
+                return ProcessKeyAtPlanningPhaseChooseActionPosition(key);
             }
 
             return GameModeHandlerResponse.NoAction();
@@ -377,63 +301,113 @@ namespace GameConsoleApp.StateHandlers
             {
                 var intent = State.Encounter.Intents[i];
                 var availableSlot = availableSlots.SingleOrDefault(x => x.Index == i);
-                if (availableSlot != null && availableSlot.Intent == null)
+                if (availableSlot != null)
+                {
+                    if (availableSlot.Intent == null)
+                    {
+                        RenderFrameLine(
+                            $"[{availableSlots.IndexOf(availableSlot) + 1}] SLOT AVAILABLE"
+                        );
+                    }
+                    else
+                    {
+                        RenderFrameLine(
+                            $"[{availableSlots.IndexOf(availableSlot) + 1}] {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
+                        );
+                    }
+                }
+                if (intent.Actor.Side == ConflictSide.Heroes)
                 {
                     RenderFrameLine(
-                        $"[{availableSlots.IndexOf(availableSlot) + 1}] SLOT AVAILABLE"
+                        $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
                     );
                 }
-
-                RenderFrameLine(
-                    $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
-                );
             }
 
-            //var intent = State.Encounter.Intents[i];
-
-            //    if (
-            //        intent.Actor.Side == ConflictSide.Heroes
-            //        && previousIntent?.Actor.Side != ConflictSide.DemonLord
-            //    )
-            //    {
-            //        list.Add(new IntentSlot(i, null));
-            //    }
-            //    else if (intent.Actor.Side == ConflictSide.DemonLord)
-            //    {
-            //        list.Add(new IntentSlot(i, intent));
-            //    }
-            //}
-
-            //var battlePlanWithPlaceholders = GetBattlePlanWithPlaceholders();
-            //var monsterSlotNumber = 0;
-
-            //foreach (var intent in battlePlanWithPlaceholders)
-            //{
-            //    if (intent.Actor == null)
-            //    {
-            //        monsterSlotNumber++;
-            //        RenderFrameLine($"[{monsterSlotNumber}] SLOT AVAILABLE");
-            //    }
-            //    else if (intent.Actor.Side == ConflictSide.DemonLord)
-            //    {
-            //        monsterSlotNumber++;
-            //        RenderFrameLine(
-            //            $"[{monsterSlotNumber}] {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
-            //        );
-            //    }
-            //    else
-            //    {
-            //        RenderFrameLine(
-            //            $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
-            //        );
-            //    }
-            //}
-
             RenderFrameLine();
-            RenderFrameLine("[Esc]: Back to action selection");
+            RenderFrameLine("[Esc]: Back to target selection");
             RenderFrameFinish();
         }
 
+        private GameModeHandlerResponse ProcessKeyAtPlanningPhaseChooseActionPosition(
+            ConsoleKeyInfo key
+        )
+        {
+            var option = key.KeyChar.ToString().ToUpperInvariant();
+
+            if (key.Key == ConsoleKey.Escape)
+            {
+                selectedTarget = null;
+                innerState = InnerState.ChooseActionTarget;
+                return GameModeHandlerResponse.NoAction();
+            }
+            else if (int.TryParse(option, out var optionNumber) && optionNumber > 0)
+            {
+                var availableSlots = GetAvailableSlots();
+                if (optionNumber > availableSlots.Count)
+                {
+                    return GameModeHandlerResponse.NoAction();
+                }
+
+                var selectedSlot = availableSlots[optionNumber - 1];
+                return new GameModeHandlerResponse()
+                {
+                    ActionType = GameModeHandlerActionType.Execute,
+                    Action = new InsertCombatActionIntoBattlePlan(
+                        intent: new CombatIntent
+                        {
+                            Actor = selectedMonster,
+                            Action = selectedAction,
+                        },
+                        index: selectedSlot.Index,
+                        actorId: selectedMonster.Id,
+                        targetId: selectedTarget.Id
+                    ),
+                };
+            }
+
+            return GameModeHandlerResponse.NoAction();
+        }
+
+        private List<IntentSlot> GetAvailableSlots()
+        {
+            var list = new List<IntentSlot>();
+            for (var i = 0; i < State.Encounter.Intents.Count; i++)
+            {
+                var intent = State.Encounter.Intents[i];
+                var previousIntent = i == 0 ? null : State.Encounter.Intents[i - 1];
+
+                if (
+                    intent.Actor.Side == ConflictSide.Heroes
+                    && previousIntent?.Actor.Side == ConflictSide.Heroes
+                )
+                {
+                    list.Add(new IntentSlot(i, null));
+                }
+                else if (intent.Actor.Side == ConflictSide.DemonLord)
+                {
+                    list.Add(new IntentSlot(i, intent));
+                }
+            }
+
+            return list;
+        }
+
+        private class IntentSlot
+        {
+            public int Index { get; private set; }
+
+            /// <summary>
+            /// null is for inserts and populated value is for overwriting
+            /// </summary>
+            public CombatIntent Intent { get; private set; }
+
+            public IntentSlot(int index, CombatIntent intent)
+            {
+                Index = index;
+                Intent = intent;
+            }
+        }
         #endregion
 
         private enum InnerState

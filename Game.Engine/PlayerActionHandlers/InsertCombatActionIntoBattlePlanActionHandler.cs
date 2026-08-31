@@ -36,16 +36,26 @@ namespace GameEngine.PlayerActionHandlers
                 intent.Actor == actor
             );
 
-            GameInstance.Encounter.Intents.Insert(
-                playerAction.Index,
-                new CombatIntent
-                {
-                    Actor = actor,
-                    Action = playerAction.Intent.Action,
-                    Target = target,
-                }
-            );
-            gameEvents.Add(new SimpleGameEvent("New intent inserted"));
+            var newIntent = new CombatIntent
+            {
+                Actor = actor,
+                Action = playerAction.Intent.Action,
+                Target = target,
+            };
+
+            if (
+                GameInstance.Encounter.Intents[playerAction.Index].Actor.Side
+                == ConflictSide.DemonLord
+            )
+            {
+                GameInstance.Encounter.Intents[playerAction.Index] = newIntent;
+                gameEvents.Add(new SimpleGameEvent("Intent replaced"));
+            }
+            else
+            {
+                GameInstance.Encounter.Intents.Insert(playerAction.Index, newIntent);
+                gameEvents.Add(new SimpleGameEvent("New intent inserted"));
+            }
 
             foreach (var intent in intentsToDelete)
             {
