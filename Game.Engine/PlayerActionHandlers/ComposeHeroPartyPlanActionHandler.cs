@@ -40,6 +40,7 @@ namespace GameEngine.PlayerActionHandlers
 
             strategy.SetHeroPartyIntents();
 
+            encounter.Phase = EncounterPhase.Planning;
             return new PlayerActionResult(GameInstance, gameEvents);
         }
 

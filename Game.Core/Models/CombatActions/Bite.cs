@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GameCore.Models.CombatActions
 {
@@ -21,5 +23,10 @@ namespace GameCore.Models.CombatActions
         }
 
         public override int GetProtection(Combatant actor, Combatant target) => 0;
+
+        public override List<Combatant> GetValidTargets(
+            Combatant actor,
+            List<Combatant> combatants
+        ) => GetEnemies(actor, combatants);
     }
 }

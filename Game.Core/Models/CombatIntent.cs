@@ -8,6 +8,8 @@ namespace GameCore.Models
         public CombatActionBase Action { get; set; }
         public Combatant Target { get; set; }
 
+        public CombatIntent() { }
+
         public CombatIntent(Combatant actor, CombatActionBase action, Combatant target)
         {
             Actor = actor;

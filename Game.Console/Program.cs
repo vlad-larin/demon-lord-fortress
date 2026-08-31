@@ -1,6 +1,7 @@
 ﻿using System;
 using GameConsoleApp.Models;
 using GameConsoleApp.StateHandlers;
+using GameConsoleApp.StateHandlers.Abstractions;
 using GameCore.Models;
 using GameCore.ObservableStates;
 using GameCore.PlayerActions;
@@ -11,6 +12,7 @@ namespace GameConsoleApp
     class Program
     {
         private static readonly MainChannel mainChannel = new MainChannel();
+        private static StateHandlerBase stateHandler = null;
 
         static void Main(string[] args)
         {
@@ -30,6 +32,7 @@ namespace GameConsoleApp
 
                 if (actionType == GameModeHandlerActionType.Quit)
                 {
+                    stateHandler = null;
                     Console.WriteLine("Quitting the game...");
                     break;
                 }
@@ -41,6 +44,7 @@ namespace GameConsoleApp
 
                 if (actionType == GameModeHandlerActionType.Execute)
                 {
+                    stateHandler = null;
                     state = mainChannel.Execute(handlerResponse.Action);
                     continue;
                 }
@@ -63,7 +67,8 @@ namespace GameConsoleApp
                     TitleModeHandler.RenderState((TitleState)state);
                     break;
                 case GameMode.Encounter:
-                    EncounterModeHandler.RenderState((EncounterState)state);
+                    stateHandler ??= new EncounterModeHandler((EncounterState)state);
+                    ((EncounterModeHandler)stateHandler).RenderState((EncounterState)state);
                     break;
                 case GameMode.Map:
                     MapRenderer.RenderState(state);
@@ -85,7 +90,7 @@ namespace GameConsoleApp
                 case GameMode.Title:
                     return TitleModeHandler.ProcessKey(key, (TitleState)state);
                 case GameMode.Encounter:
-                    return EncounterModeHandler.ProcessKey(key, (EncounterState)state);
+                    return ((EncounterModeHandler)stateHandler).ProcessKey(key);
                 default:
 
                     throw new NotImplementedException(

@@ -7,5 +7,8 @@ namespace GameConsoleApp.Models
         public GameModeHandlerActionType ActionType { get; set; }
 
         public IPlayerAction Action { get; set; }
+
+        public static GameModeHandlerResponse NoAction() =>
+            new GameModeHandlerResponse { ActionType = GameModeHandlerActionType.NoAction };
     }
 }
