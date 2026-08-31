@@ -1,4 +1,6 @@
-﻿namespace GameCore.Models.CombatActions
+﻿using System.Collections.Generic;
+
+namespace GameCore.Models.CombatActions
 {
     public class Ward : CombatActionBase
     {
@@ -15,5 +17,10 @@
         public override int GetDamage(Combatant actor, Combatant target) => 0;
 
         public override int GetProtection(Combatant actor, Combatant target) => Durability;
+
+        public override List<Combatant> GetValidTargets(
+            Combatant actor,
+            List<Combatant> combatants
+        ) => GetAllies(actor, combatants);
     }
 }

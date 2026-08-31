@@ -1,4 +1,6 @@
-﻿namespace GameCore.Models.CombatActions
+﻿using System.Collections.Generic;
+
+namespace GameCore.Models.CombatActions
 {
     public class Protect : CombatActionBase
     {
@@ -14,5 +16,10 @@
 
         public override int GetProtection(Combatant actor, Combatant target) =>
             target == actor ? 0 : actor.Hp / 2;
+
+        public override List<Combatant> GetValidTargets(
+            Combatant actor,
+            List<Combatant> combatants
+        ) => GetAllies(actor, combatants);
     }
 }

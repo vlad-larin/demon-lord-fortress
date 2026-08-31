@@ -1,4 +1,8 @@
-﻿namespace GameCore.Models.CombatActions
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace GameCore.Models.CombatActions
 {
     public abstract class CombatActionBase
     {
@@ -11,5 +15,15 @@
 
         public abstract int GetDamage(Combatant actor, Combatant target);
         public abstract int GetProtection(Combatant actor, Combatant target);
+        public abstract List<Combatant> GetValidTargets(
+            Combatant actor,
+            List<Combatant> combatants
+        );
+
+        protected List<Combatant> GetEnemies(Combatant actor, List<Combatant> combatants) =>
+            combatants.Where(c => c.Side != actor.Side).ToList();
+
+        protected List<Combatant> GetAllies(Combatant actor, List<Combatant> combatants) =>
+            combatants.Where(c => c.Side == actor.Side).ToList();
     }
 }
