@@ -21,20 +21,17 @@ namespace GameEngine.PlayerActionHandlers
             InsertCombatActionIntoBattlePlan playerAction
         )
         {
+            var encounter = GameInstance.Encounter;
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(new SimpleGameEvent("Inserting combat action into the battle plan"));
 
-            var actor = GameInstance.Encounter.Combatants.Single(c => c.Id == playerAction.ActorId);
+            var actor = encounter.Combatants.Single(c => c.Id == playerAction.ActorId);
             if (actor.Side != ConflictSide.DemonLord)
                 throw new InvalidOperationException("Only demon lord actions can be inserted");
 
-            var target = GameInstance.Encounter.Combatants.Single(c =>
-                c.Id == playerAction.TargetId
-            );
+            var target = encounter.Combatants.Single(c => c.Id == playerAction.TargetId);
 
-            var intentsToDelete = GameInstance.Encounter.Intents.FindAll(intent =>
-                intent.Actor == actor
-            );
+            var intentsToDelete = encounter.Intents.FindAll(intent => intent.Actor == actor);
 
             var newIntent = new CombatIntent
             {
@@ -43,23 +40,25 @@ namespace GameEngine.PlayerActionHandlers
                 Target = target,
             };
 
-            if (
-                GameInstance.Encounter.Intents[playerAction.Index].Actor.Side
-                == ConflictSide.DemonLord
-            )
+            if (encounter.Intents.Count == playerAction.Index)
             {
-                GameInstance.Encounter.Intents[playerAction.Index] = newIntent;
+                encounter.Intents.Add(newIntent);
+                gameEvents.Add(new SimpleGameEvent("New intent added"));
+            }
+            else if (encounter.Intents[playerAction.Index].Actor.Side == ConflictSide.DemonLord)
+            {
+                encounter.Intents[playerAction.Index] = newIntent;
                 gameEvents.Add(new SimpleGameEvent("Intent replaced"));
             }
             else
             {
-                GameInstance.Encounter.Intents.Insert(playerAction.Index, newIntent);
+                encounter.Intents.Insert(playerAction.Index, newIntent);
                 gameEvents.Add(new SimpleGameEvent("New intent inserted"));
             }
 
             foreach (var intent in intentsToDelete)
             {
-                GameInstance.Encounter.Intents.Remove(intent);
+                encounter.Intents.Remove(intent);
                 gameEvents.Add(new SimpleGameEvent("Old intent removed"));
             }
 

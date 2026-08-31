@@ -297,6 +297,7 @@ namespace GameConsoleApp.StateHandlers
             RenderFrameLine();
 
             var availableSlots = GetAvailableSlots();
+            var renderedSlots = new HashSet<IntentSlot>();
             for (var i = 0; i < State.Encounter.Intents.Count; i++)
             {
                 var intent = State.Encounter.Intents[i];
@@ -315,6 +316,7 @@ namespace GameConsoleApp.StateHandlers
                             $"[{availableSlots.IndexOf(availableSlot) + 1}] {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
                         );
                     }
+                    renderedSlots.Add(availableSlot);
                 }
                 if (intent.Actor.Side == ConflictSide.Heroes)
                 {
@@ -322,6 +324,11 @@ namespace GameConsoleApp.StateHandlers
                         $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
                     );
                 }
+            }
+
+            foreach (var availableSlot in availableSlots.Where(s => !renderedSlots.Contains(s)))
+            {
+                RenderFrameLine($"[{availableSlots.IndexOf(availableSlot) + 1}] SLOT AVAILABLE");
             }
 
             RenderFrameLine();
@@ -389,6 +396,7 @@ namespace GameConsoleApp.StateHandlers
                     list.Add(new IntentSlot(i, intent));
                 }
             }
+            list.Add(new IntentSlot(State.Encounter.Intents.Count, null));
 
             return list;
         }
