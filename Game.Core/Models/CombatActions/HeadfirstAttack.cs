@@ -14,7 +14,7 @@ namespace GameCore.Models.CombatActions
             ExposureRounds = exposureRounds;
         }
 
-        public override int GetDamage(Combatant actor, Combatant target) => 0;
+        public override int GetDamage(Combatant actor, Combatant target) => Damage;
 
         public override int GetProtection(Combatant actor, Combatant target) => 0;
 
