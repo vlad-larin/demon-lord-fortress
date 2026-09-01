@@ -6,13 +6,11 @@ using GameCore.Models;
 using GameCore.Models.GameEvents;
 using GameCore.Models.HeroPartyStrategies;
 using GameCore.PlayerActions;
-using GameEngine.Attributes;
 using GameEngine.Models;
 using GameEngine.PlayerActionHandlers.Abstractions;
 
 namespace GameEngine.PlayerActionHandlers
 {
-    [SupportsGameMode(GameMode.Encounter)]
     internal class ComposeHeroPartyPlanActionHandler
         : PlayerActionHandler<ComposeHeroPartyPlanAction>
     {

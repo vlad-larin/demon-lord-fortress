@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using GameCore.Factories.Combatants;
 using GameCore.Models;
-using GameScenarios.Attributes;
 
 namespace GameScenarios.Scenarios
 {
-    [Scenario("Test combat scenario")]
     public class TestCombatScenario : ScenarioBase
     {
         public override GameInstance StartScenario()

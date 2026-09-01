@@ -4,13 +4,11 @@ using System.Linq;
 using GameCore.Models;
 using GameCore.Models.GameEvents;
 using GameCore.PlayerActions;
-using GameEngine.Attributes;
 using GameEngine.Models;
 using GameEngine.PlayerActionHandlers.Abstractions;
 
 namespace GameEngine.PlayerActionHandlers
 {
-    [SupportsGameMode(GameMode.Encounter)]
     internal class InsertCombatActionIntoBattlePlanActionHandler
         : PlayerActionHandler<InsertCombatActionIntoBattlePlan>
     {
