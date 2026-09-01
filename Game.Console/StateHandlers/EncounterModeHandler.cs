@@ -129,14 +129,17 @@ namespace GameConsoleApp.StateHandlers
                 Console.WriteLine($"* {alliedCombatant.Class}");
             }
 
-            Console.WriteLine();
-            Console.WriteLine("Battle plan:");
+            RenderFrameStart();
+
+            RenderFrameLine("BATTLE PLAN");
+            RenderFrameLine();
             foreach (var intent in encounter.Intents)
             {
-                Console.WriteLine(
+                RenderFrameLine(
                     $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
                 );
             }
+            RenderFrameLine();
 
             switch (innerState)
             {
@@ -193,14 +196,16 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Monster
         private void RenderChooseMonsterPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine("CHOOSE MONSTER");
             RenderFrameLine();
 
             var monsters = GetMonsters();
             for (int i = 0; i < monsters.Length; i++)
             {
-                RenderFrameLine($"[{i + 1}]: {monsters[i].Class}");
+                var monster = monsters[i];
+                var isAssigned = State.Encounter.Intents.Any(intent => intent.Actor == monster);
+                RenderFrameLine($"[{i + 1}]: {monster.Class}{(isAssigned ? " (assigned)" : "")}");
             }
             RenderFrameLine();
 
@@ -229,7 +234,7 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Action
         private void RenderChooseActionPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine($"MONSTER: {selectedMonster.Class}");
             RenderFrameLine("CHOOSE ACTION");
             RenderFrameLine();
@@ -271,7 +276,7 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Action Target
         private void RenderChooseActionTargetPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine($"MONSTER: {selectedMonster.Class}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
             RenderFrameLine($"CHOOSE TARGET");
@@ -324,7 +329,7 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Action Position
         private void RenderChooseActionPositionPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine($"MONSTER: {selectedMonster.Class}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
             RenderFrameLine($"TARGET: {selectedTarget.Class}");
