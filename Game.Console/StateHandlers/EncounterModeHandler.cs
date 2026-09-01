@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using GameConsoleApp.Models;
 using GameConsoleApp.StateHandlers.Abstractions;
@@ -8,7 +8,6 @@ using GameCore.Models;
 using GameCore.Models.CombatActions;
 using GameCore.ObservableStates;
 using GameCore.PlayerActions;
-using GameScenarios.Scenarios;
 
 namespace GameConsoleApp.StateHandlers
 {
@@ -32,6 +31,82 @@ namespace GameConsoleApp.StateHandlers
             var encounter = State.Encounter;
             Console.WriteLine($"Encounter: Phase {encounter.Phase}");
 
+            switch (encounter.Phase)
+            {
+                case EncounterPhase.Briefing:
+                    RenderBriefingPrompt();
+                    break;
+                case EncounterPhase.Planning:
+                    RenderPlanningPrompt();
+                    break;
+                default:
+                    throw new NotImplementedException($"Unknown phase: {encounter.Phase}");
+            }
+        }
+
+        public override GameModeHandlerResponse ProcessKey(ConsoleKeyInfo key)
+        {
+            var encounter = State.Encounter;
+            var option = key.KeyChar.ToString().ToUpperInvariant();
+
+            switch (encounter.Phase)
+            {
+                case EncounterPhase.Briefing:
+                    return ProcessKeyAtBriefingPhase(key);
+                case EncounterPhase.Planning:
+                    return ProcessKeyAtPlanningPhase(key);
+                default:
+                    throw new NotImplementedException(
+                        $"[EncounterModeHandler] Unexpected phase: {encounter.Phase}"
+                    );
+            }
+        }
+
+        #region Briefing
+        private void RenderBriefingPrompt()
+        {
+            RenderFrameStart();
+            RenderFrameLine("BATTLE START");
+            RenderFrameLine();
+            RenderBattleSides();
+            RenderFrameLine();
+            RenderFrameLine("[Space]: Proceed to battle planning");
+            RenderFrameFinish();
+        }
+
+        private void RenderBattleSides()
+        {
+            RenderFrameLine("ENEMIES:");
+            foreach (var hero in GetHeroes())
+                RenderFrameLine($"* {hero.Class}");
+
+            RenderFrameLine();
+
+            RenderFrameLine("YOUR FORCES:");
+            foreach (var monster in GetMonsters())
+                RenderFrameLine($"* {monster.Class}");
+        }
+
+        private GameModeHandlerResponse ProcessKeyAtBriefingPhase(ConsoleKeyInfo key)
+        {
+            var option = key.KeyChar.ToString().ToUpperInvariant();
+            if (option == " ")
+            {
+                return new GameModeHandlerResponse
+                {
+                    ActionType = GameModeHandlerActionType.Execute,
+                    Action = new ComposeHeroPartyPlanAction(),
+                };
+            }
+            return GameModeHandlerResponse.NoAction();
+        }
+        #endregion
+
+        #region Planning
+        private void RenderPlanningPrompt()
+        {
+            var encounter = State.Encounter;
+
             Console.WriteLine();
 
             Console.WriteLine("Enemies:");
@@ -54,79 +129,42 @@ namespace GameConsoleApp.StateHandlers
                 Console.WriteLine($"* {alliedCombatant.Class}");
             }
 
-            Console.WriteLine();
-            Console.WriteLine("Battle plan:");
+            RenderFrameStart();
+
+            RenderFrameLine("BATTLE PLAN");
+            RenderFrameLine();
             foreach (var intent in encounter.Intents)
             {
-                Console.WriteLine(
+                RenderFrameLine(
                     $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
                 );
             }
+            RenderFrameLine();
 
-            switch (encounter.Phase)
+            switch (innerState)
             {
-                case EncounterPhase.Briefing:
-                    RenderBriefingPrompt();
-                    break;
-                case EncounterPhase.Planning when innerState == InnerState.ChooseMonster:
+                case InnerState.ChooseMonster:
                     RenderChooseMonsterPrompt();
                     break;
-                case EncounterPhase.Planning when innerState == InnerState.ChooseAction:
+                case InnerState.ChooseAction:
                     RenderChooseActionPrompt();
                     break;
-                case EncounterPhase.Planning when innerState == InnerState.ChooseActionTarget:
+                case InnerState.ChooseActionTarget:
                     RenderChooseActionTargetPrompt();
                     break;
-                case EncounterPhase.Planning when innerState == InnerState.ChooseActionPosition:
+                case InnerState.ChooseActionPosition:
                     RenderChooseActionPositionPrompt();
                     break;
                 default:
                     throw new NotImplementedException(
-                        $"Unknown combination: {encounter.Phase} + {innerState}"
+                        $"[Planning] Unknown inner state: {innerState}"
                     );
             }
         }
+        #endregion
 
-        public override GameModeHandlerResponse ProcessKey(ConsoleKeyInfo key)
-        {
-            var encounter = State.Encounter;
-            var option = key.KeyChar.ToString().ToUpperInvariant();
-
-            switch (encounter.Phase)
-            {
-                case EncounterPhase.Briefing:
-                    return ProcessKeyAtBriefingPhase(key);
-                case EncounterPhase.Planning:
-                    return ProcessKeyAtPlanningPhase(key);
-                default:
-                    throw new NotImplementedException(
-                        $"[EncounterModeHandler] Unexpected phase: {encounter.Phase}"
-                    );
-            }
-        }
-
-        private void RenderBriefingPrompt()
-        {
-            RenderFrameStart();
-            RenderFrameLine("BATTLE START");
-            RenderFrameLine();
-            RenderFrameLine("[Space]: Proceed to battle planning");
-            RenderFrameFinish();
-        }
-
-        private GameModeHandlerResponse ProcessKeyAtBriefingPhase(ConsoleKeyInfo key)
-        {
-            var option = key.KeyChar.ToString().ToUpperInvariant();
-            if (option == " ")
-            {
-                return new GameModeHandlerResponse
-                {
-                    ActionType = GameModeHandlerActionType.Execute,
-                    Action = new ComposeHeroPartyPlanAction(),
-                };
-            }
-            return GameModeHandlerResponse.NoAction();
-        }
+        private Combatant[] GetHeroes() =>
+            State.Encounter.Combatants.Where(x => x.Side == ConflictSide.Heroes).ToArray();
 
         private Combatant[] GetMonsters() =>
             State.Encounter.Combatants.Where(x => x.Side == ConflictSide.DemonLord).ToArray();
@@ -158,14 +196,16 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Monster
         private void RenderChooseMonsterPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine("CHOOSE MONSTER");
             RenderFrameLine();
 
             var monsters = GetMonsters();
             for (int i = 0; i < monsters.Length; i++)
             {
-                RenderFrameLine($"[{i + 1}]: {monsters[i].Class}");
+                var monster = monsters[i];
+                var isAssigned = State.Encounter.Intents.Any(intent => intent.Actor == monster);
+                RenderFrameLine($"[{i + 1}]: {monster.Class}{(isAssigned ? " (assigned)" : "")}");
             }
             RenderFrameLine();
 
@@ -194,9 +234,9 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Action
         private void RenderChooseActionPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine($"MONSTER: {selectedMonster.Class}");
-            RenderFrameLine($"CHOOSE ACTION");
+            RenderFrameLine("CHOOSE ACTION");
             RenderFrameLine();
 
             var actions = selectedMonster.Actions;
@@ -236,7 +276,7 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Action Target
         private void RenderChooseActionTargetPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine($"MONSTER: {selectedMonster.Class}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
             RenderFrameLine($"CHOOSE TARGET");
@@ -289,7 +329,7 @@ namespace GameConsoleApp.StateHandlers
         #region Inner state: Choose Action Position
         private void RenderChooseActionPositionPrompt()
         {
-            RenderFrameStart();
+            RenderFrameDivider();
             RenderFrameLine($"MONSTER: {selectedMonster.Class}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
             RenderFrameLine($"TARGET: {selectedTarget.Class}");

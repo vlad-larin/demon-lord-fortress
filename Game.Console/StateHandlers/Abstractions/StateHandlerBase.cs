@@ -21,6 +21,9 @@ namespace GameConsoleApp.StateHandlers.Abstractions
         protected void RenderFrameLine(string content = "") =>
             Console.WriteLine($"║ {content.PadRight(FrameContentWidth, ' ')} ║");
 
+        protected void RenderFrameDivider() =>
+            Console.WriteLine($"╠═{"".PadRight(FrameContentWidth, '═')}═╣");
+
         protected void RenderFrameFinish() =>
             Console.WriteLine($"╚═{"".PadRight(FrameContentWidth, '═')}═╝");
     }

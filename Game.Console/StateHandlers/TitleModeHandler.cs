@@ -1,26 +1,37 @@
 ﻿using System;
 using GameConsoleApp.Models;
+using GameConsoleApp.StateHandlers.Abstractions;
 using GameCore.ObservableStates;
 using GameCore.PlayerActions;
 
 namespace GameConsoleApp.StateHandlers
 {
-    public static class TitleModeHandler
+    internal class TitleModeHandler : StateHandlerBase<TitleState>
     {
-        internal static void RenderState(TitleState state)
-        {
-            Console.WriteLine("Welcome to Demon Lord Fortess!");
-            Console.WriteLine();
-            Console.WriteLine("Choose the option:");
+        public TitleState State { get; private set; }
 
-            for (int i = 0; i < state.NewScenarioNames.Length; i++)
-            {
-                Console.WriteLine($"{i + 1}: Start '{state.NewScenarioNames[i]}' scenario");
-            }
-            Console.WriteLine($"Q: Quit");
+        public TitleModeHandler(TitleState state)
+        {
+            State = state;
         }
 
-        internal static GameModeHandlerResponse ProcessKey(ConsoleKeyInfo key, TitleState state)
+        public override void RenderState(TitleState state)
+        {
+            RenderFrameStart();
+            RenderFrameLine("Welcome to Demon Lord Fortess!");
+            RenderFrameLine();
+            RenderFrameLine("CHOOSE THE OPTION");
+            RenderFrameLine();
+            for (int i = 0; i < state.NewScenarioNames.Length; i++)
+            {
+                RenderFrameLine($"[{i + 1}] Start '{state.NewScenarioNames[i]}' scenario");
+            }
+            RenderFrameLine();
+            RenderFrameLine($"[Q] Quit");
+            RenderFrameFinish();
+        }
+
+        public override GameModeHandlerResponse ProcessKey(ConsoleKeyInfo key)
         {
             var option = key.KeyChar.ToString().ToUpperInvariant();
             if (option == "Q")
@@ -32,10 +43,11 @@ namespace GameConsoleApp.StateHandlers
             }
             else if (
                 int.TryParse(option, out var scenarioNumber)
-                && scenarioNumber <= state.NewScenarioNames.Length
+                && scenarioNumber > 0
+                && scenarioNumber <= State.NewScenarioNames.Length
             )
             {
-                var scenarioName = state.NewScenarioNames[scenarioNumber - 1];
+                var scenarioName = State.NewScenarioNames[scenarioNumber - 1];
                 return new GameModeHandlerResponse()
                 {
                     ActionType = GameModeHandlerActionType.Execute,

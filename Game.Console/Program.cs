@@ -64,7 +64,8 @@ namespace GameConsoleApp
             switch (state.GameMode)
             {
                 case GameMode.Title:
-                    TitleModeHandler.RenderState((TitleState)state);
+                    stateHandler ??= new TitleModeHandler((TitleState)state);
+                    ((TitleModeHandler)stateHandler).RenderState((TitleState)state);
                     break;
                 case GameMode.Encounter:
                     stateHandler ??= new EncounterModeHandler((EncounterState)state);
@@ -88,7 +89,7 @@ namespace GameConsoleApp
             switch (state.GameMode)
             {
                 case GameMode.Title:
-                    return TitleModeHandler.ProcessKey(key, (TitleState)state);
+                    return ((TitleModeHandler)stateHandler).ProcessKey(key);
                 case GameMode.Encounter:
                     return ((EncounterModeHandler)stateHandler).ProcessKey(key);
                 default:
