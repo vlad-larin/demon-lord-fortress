@@ -1,11 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using GameCore.Interfaces;
 using GameCore.Models;
-using GameEngine.Attributes;
+using GameCore.PlayerActions;
 using GameEngine.Interfaces;
 using GameEngine.PlayerActionHandlers;
 
@@ -13,42 +10,57 @@ namespace GameEngine.Helpers
 {
     internal static class PlayerActionHandlerResolver
     {
-        private static readonly Dictionary<(Type, GameMode), Type> HandlerTypes = GetHandlerTypes();
+        private static readonly Dictionary<
+            (Type PlayerActionType, GameMode GameMode),
+            Func<GameInstance, IPlayerActionHandler>
+        > Handlers = BuildHandlers();
 
-        private static Dictionary<(Type, GameMode), Type> GetHandlerTypes()
+        /// <summary>
+        /// The single place where a player action is bound to the handler that serves it.
+        /// Every handler is referenced statically so the compiler checks the binding and
+        /// no linker (Unity/IL2CPP included) can strip a handler it cannot see being used.
+        /// </summary>
+        private static Dictionary<
+            (Type, GameMode),
+            Func<GameInstance, IPlayerActionHandler>
+        > BuildHandlers()
         {
-            var result = new Dictionary<(Type, GameMode), Type>();
+            var handlers =
+                new Dictionary<(Type, GameMode), Func<GameInstance, IPlayerActionHandler>>();
 
-            var types = Assembly
-                .GetExecutingAssembly()
-                .GetTypes()
-                .Where(type => type.IsClass && !type.IsAbstract);
-
-            foreach (var type in types)
+            void Register<TPlayerAction>(
+                GameMode gameMode,
+                Func<GameInstance, IPlayerActionHandler<TPlayerAction>> createHandler
+            )
+                where TPlayerAction : IPlayerAction
             {
-                var ifaces = type.GetInterfaces();
-                var ourIfaces = ifaces
-                    .Where(i =>
-                        i.IsGenericType
-                        && i.GetGenericTypeDefinition() == typeof(IPlayerActionHandler<>)
-                    )
-                    .ToArray();
-                if (ourIfaces.Length == 0)
-                    continue;
+                var key = (typeof(TPlayerAction), gameMode);
+                if (handlers.ContainsKey(key))
+                    throw new InvalidOperationException(
+                        $"[PlayerActionHandlerResolver] {typeof(TPlayerAction).Name} is already registered for {gameMode} game mode"
+                    );
 
-                var gameModes = type.GetCustomAttributes<SupportsGameModeAttribute>()
-                    .Select(attr => attr.GameMode);
-
-                foreach (var iface in ourIfaces)
-                {
-                    foreach (var gameMode in gameModes)
-                    {
-                        result.Add((iface.GetGenericArguments()[0], gameMode), type);
-                    }
-                }
+                handlers.Add(key, gameInstance => createHandler(gameInstance));
             }
 
-            return result;
+            Register<InitializeAction>(
+                GameMode.NotInitialized,
+                gameInstance => new InitializeActionHandler(gameInstance)
+            );
+            Register<StartScenarioAction>(
+                GameMode.Title,
+                gameInstance => new TitleActionHandler(gameInstance)
+            );
+            Register<ComposeHeroPartyPlanAction>(
+                GameMode.Encounter,
+                gameInstance => new ComposeHeroPartyPlanActionHandler(gameInstance)
+            );
+            Register<InsertCombatActionIntoBattlePlan>(
+                GameMode.Encounter,
+                gameInstance => new InsertCombatActionIntoBattlePlanActionHandler(gameInstance)
+            );
+
+            return handlers;
         }
 
         public static IPlayerActionHandler Resolve(
@@ -58,17 +70,16 @@ namespace GameEngine.Helpers
         {
             var playerActionType = playerAction.GetType();
             if (
-                !HandlerTypes.TryGetValue(
+                !Handlers.TryGetValue(
                     (playerActionType, gameInstance.GameMode),
-                    out var handlerType
+                    out var createHandler
                 )
             )
                 throw new NotImplementedException(
                     $"[PlayerActionHandlerResolver] Not found resolver for {playerActionType.Name} that supports {gameInstance.GameMode} game mode"
                 );
 
-            var resolver = Activator.CreateInstance(handlerType, gameInstance);
-            return (IPlayerActionHandler)resolver;
+            return createHandler(gameInstance);
         }
     }
 }

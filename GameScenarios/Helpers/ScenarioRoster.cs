@@ -1,50 +1,63 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using GameScenarios.Attributes;
+using GameScenarios.Scenarios;
 
 namespace GameScenarios.Helpers
 {
     public static class ScenarioRoster
     {
-        private static ScenarioRosterItem[]? _availableItems = null;
+        private static readonly IReadOnlyList<ScenarioRosterItem> AvailableItems =
+            BuildAvailableItems();
 
-        private static ScenarioRosterItem[] AvailableItems
+        /// <summary>
+        /// The single place where a playable scenario is given its display name.
+        /// Every scenario is constructed through a statically referenced factory so the
+        /// compiler checks the binding and no linker can strip a scenario it cannot see
+        /// being used.
+        /// </summary>
+        private static IReadOnlyList<ScenarioRosterItem> BuildAvailableItems()
         {
-            get
+            var items = new List<ScenarioRosterItem>();
+
+            void Register(string name, Func<ScenarioBase> createScenario)
             {
-                if (_availableItems == null)
-                {
-                    _availableItems = Assembly
-                        .GetExecutingAssembly()
-                        .GetTypes()
-                        .Where(type => type.IsClass)
-                        .Select(type => new ScenarioRosterItem(
-                            type,
-                            type.GetCustomAttribute<ScenarioAttribute>()
-                        ))
-                        .Where(item => item.ScenarioAttribute != null)
-                        .ToArray();
-                }
-                return _availableItems;
+                if (items.Any(item => item.Name == name))
+                    throw new InvalidOperationException(
+                        $"[ScenarioRoster] Scenario '{name}' is already registered"
+                    );
+
+                items.Add(new ScenarioRosterItem(name, createScenario));
             }
+
+            Register("Test combat scenario", () => new TestCombatScenario());
+
+            return items;
         }
 
         public static string[] GetAvailableNames() =>
-            AvailableItems.Select(x => x.ScenarioAttribute.Name).ToArray();
+            AvailableItems.Select(item => item.Name).ToArray();
 
-        public static Type GetScenarioTypeByName(string name) =>
-            AvailableItems.First(item => item.ScenarioAttribute.Name == name).Type;
+        public static ScenarioBase CreateScenario(string name)
+        {
+            var item = AvailableItems.FirstOrDefault(x => x.Name == name);
+            if (item == null)
+                throw new InvalidOperationException(
+                    $"[ScenarioRoster] Unknown scenario '{name}'. Available scenarios: {string.Join(", ", GetAvailableNames())}"
+                );
+
+            return item.CreateScenario();
+        }
 
         private class ScenarioRosterItem
         {
-            public Type Type { get; private set; }
-            public ScenarioAttribute ScenarioAttribute { get; private set; }
+            public string Name { get; }
+            public Func<ScenarioBase> CreateScenario { get; }
 
-            public ScenarioRosterItem(Type type, ScenarioAttribute scenarioAttribute)
+            public ScenarioRosterItem(string name, Func<ScenarioBase> createScenario)
             {
-                Type = type;
-                ScenarioAttribute = scenarioAttribute;
+                Name = name;
+                CreateScenario = createScenario;
             }
         }
     }
