@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
@@ -33,6 +35,7 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
 
             actor.PerceivedDanger += Strength;
+            IncreaseStrength(target, Strength);
 
             gameEvents.Add(
                 new SimpleGameEvent(
@@ -41,6 +44,17 @@ namespace GameCore.Models.CombatActions
             );
 
             return gameEvents;
+        }
+
+        private void IncreaseStrength(Combatant target, int addStrength)
+        {
+            if (
+                target.Conditions.FirstOrDefault(c => c is Strengthened)
+                is Strengthened strengthened
+            )
+                strengthened.AddStrength(addStrength);
+            else
+                target.Conditions.Add(new Strengthened(addStrength));
         }
     }
 }

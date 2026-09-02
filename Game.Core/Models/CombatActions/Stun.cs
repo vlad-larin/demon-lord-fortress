@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
@@ -41,10 +42,19 @@ namespace GameCore.Models.CombatActions
                 stunnedIntent.Target = null;
             }
 
+            InflictStunned(target, StunRounds);
             if (stunnedIntents.Count > 0)
                 gameEvents.Add(new SimpleGameEvent($"{target.Class} loses their action"));
 
             return gameEvents;
+        }
+
+        private void InflictStunned(Combatant target, int rounds)
+        {
+            if (target.Conditions.FirstOrDefault(c => c is Stunned) is Stunned stunned)
+                stunned.AddRounds(rounds);
+            else
+                target.Conditions.Add(new Stunned(rounds));
         }
     }
 }

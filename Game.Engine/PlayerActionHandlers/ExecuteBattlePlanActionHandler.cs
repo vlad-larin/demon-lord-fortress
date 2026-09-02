@@ -44,6 +44,7 @@ namespace GameEngine.PlayerActionHandlers
                 // Execute the action
                 var executionEvents = intent.Action.Execute(intent.Actor, intent.Target, encounter);
                 gameEvents.AddRange(executionEvents);
+                intent.IsExecuted = true;
 
                 // Remove dead combatants
 

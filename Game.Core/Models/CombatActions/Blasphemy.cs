@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
+using GameCore.Models.HeroPartyStrategies.Helpers;
 
 namespace GameCore.Models.CombatActions
 {
@@ -29,12 +31,14 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(new SimpleGameEvent($"{actor.Class} shouts unspeakable blasphemies!"));
 
-            var holyEnemies = encounter
-                .Combatants.Where(c => c.Side != actor.Side && HolyClasses.Contains(c.Class))
+            var holyEnemies = GetEnemies(actor, encounter.Combatants)
+                .Where(c => HolyClasses.Contains(c.Class))
                 .ToList();
 
             foreach (var holyEnemy in holyEnemies)
             {
+                holyEnemy.Conditions.Add(new Taunted(actor));
+
                 var retaliation = FindStrongestAttack(holyEnemy, actor);
                 if (retaliation == null)
                 {
@@ -46,10 +50,9 @@ namespace GameCore.Models.CombatActions
                     continue;
                 }
 
-                // Rewriting the intents of the taunted hero in place is enough to break their
-                // plan. Intents that were already resolved this round are rewritten too, but
-                // that is harmless: the list is rebuilt every planning phase.
-                var tauntedIntents = encounter.Intents.Where(i => i.Actor == holyEnemy).ToList();
+                var tauntedIntents = encounter
+                    .Intents.Where(i => i.Actor == holyEnemy && !i.IsExecuted)
+                    .ToList();
                 if (tauntedIntents.Count == 0)
                     continue;
 
@@ -65,14 +68,10 @@ namespace GameCore.Models.CombatActions
                     )
                 );
             }
-
             return gameEvents;
         }
 
         private static CombatActionBase FindStrongestAttack(Combatant actor, Combatant target) =>
-            actor
-                .Actions.Where(action => action.GetDamage(actor, target) > 0)
-                .OrderByDescending(action => action.GetDamage(actor, target))
-                .FirstOrDefault();
+            AttackCalculator.FindStrongestAttack(actor, new Combatant[] { target }).Action;
     }
 }

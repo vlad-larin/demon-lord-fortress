@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
@@ -31,9 +33,9 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new HpReducedGameEvent(target, Damage));
 
             target.Hp -= Damage;
+            InflictExposed(actor, ExposureRounds);
 
             // The self-inflicted exposure is only reported: combatants carry no conditions,
             // so there is nowhere to store it for the next ExposureRounds rounds.
@@ -43,7 +45,17 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
+            gameEvents.Add(new HpReducedGameEvent(target, Damage));
+
             return gameEvents;
+        }
+
+        private void InflictExposed(Combatant target, int rounds)
+        {
+            if (target.Conditions.FirstOrDefault(c => c is Exposed) is Exposed exposed)
+                exposed.AddRounds(rounds);
+            else
+                target.Conditions.Add(new Exposed(rounds));
         }
     }
 }

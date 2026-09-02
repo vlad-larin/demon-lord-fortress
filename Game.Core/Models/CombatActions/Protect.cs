@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
@@ -61,6 +62,8 @@ namespace GameCore.Models.CombatActions
                     )
                 );
             }
+
+            target.Conditions.Add(new Protected(actor, ProtectRounds));
 
             return gameEvents;
         }

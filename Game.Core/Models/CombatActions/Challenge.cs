@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
@@ -30,14 +31,16 @@ namespace GameCore.Models.CombatActions
             Encounter encounter
         )
         {
-            // A riposte fires in reaction to being attacked. Actions are only resolved on the
-            // turn of their own actor, so the counter attacks cannot be armed from here and
-            // the challenge is only declared.
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
                     $"{actor.Class} challenges {target.Class}, promising {RiposteCount} ripostes of {RiposteDamage} damage"
                 )
+            );
+
+            target.Conditions.Add(new Taunted(actor));
+            actor.Conditions.Add(
+                new Riposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage)
             );
 
             return gameEvents;

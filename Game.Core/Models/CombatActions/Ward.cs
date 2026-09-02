@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
@@ -39,7 +41,17 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
+            ApplyWard(target, WardRounds, Durability);
+
             return gameEvents;
+        }
+
+        private void ApplyWard(Combatant target, int wardRounds, int durability)
+        {
+            if (target.Conditions.FirstOrDefault(c => c is Warded) is Warded warded)
+                warded.RenewWard(wardRounds: wardRounds, durability: durability);
+            else
+                target.Conditions.Add(new Warded(wardRounds: wardRounds, durability: durability));
         }
     }
 }

@@ -41,6 +41,7 @@ namespace GameCore.Models.CombatActions
             );
 
             target.Hp += heal;
+            gameEvents.Add(new HpIncreasedGameEvent(target, heal));
 
             return gameEvents;
         }
