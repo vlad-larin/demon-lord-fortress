@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -20,5 +22,27 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => GetAllies(actor, combatants);
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            var heal = Math.Min(Heal, target.MaxHp - target.Hp);
+
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(
+                heal > 0
+                    ? new SimpleGameEvent($"{actor.Class} heals {target.Class} for {heal} HP")
+                    : new SimpleGameEvent(
+                        $"{actor.Class} lays hands on {target.Class}, but they are already whole"
+                    )
+            );
+
+            target.Hp += heal;
+
+            return gameEvents;
+        }
     }
 }

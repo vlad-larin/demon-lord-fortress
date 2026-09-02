@@ -50,6 +50,8 @@ namespace GameEngine.PlayerActionHandlers
                 // Check victory conditions
             }
 
+            return new PlayerActionResult(GameInstance, gameEvents);
+
             //var actor = encounter.Combatants.Single(c => c.Id == playerAction.ActorId);
             //if (actor.Side != ConflictSide.DemonLord)
             //    throw new InvalidOperationException("Only demon lord actions can be inserted");

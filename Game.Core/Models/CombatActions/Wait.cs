@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -15,5 +16,17 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => new List<Combatant> { actor };
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(new SimpleGameEvent($"{actor.Class} does nothing"));
+
+            return gameEvents;
+        }
     }
 }

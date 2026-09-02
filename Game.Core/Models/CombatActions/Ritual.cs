@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -20,5 +21,26 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => new List<Combatant> { actor };
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            // Combatants have no damage modifier to grow, so the ritual only makes the caster
+            // look more dangerous, which is what actually pulls the attention of the party.
+            var gameEvents = new List<GameEventBase>();
+
+            actor.PerceivedDanger += Strength;
+
+            gameEvents.Add(
+                new SimpleGameEvent(
+                    $"{actor.Class} channels a dark ritual and grows {Strength} more terrifying"
+                )
+            );
+
+            return gameEvents;
+        }
     }
 }

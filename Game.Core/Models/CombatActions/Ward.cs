@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -22,5 +23,23 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => GetAllies(actor, combatants);
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            // A ward is a pool of shield points that absorbs damage for WardRounds rounds.
+            // Combatants have nowhere to keep it, so the shield is only announced.
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(
+                new SimpleGameEvent(
+                    $"{actor.Class} wraps {target.Class} in a ward of {Durability} points for {WardRounds} rounds"
+                )
+            );
+
+            return gameEvents;
+        }
     }
 }
