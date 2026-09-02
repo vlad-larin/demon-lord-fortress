@@ -1,4 +1,5 @@
-﻿using GameCore.Models.Conditions.Abstractions;
+﻿using System;
+using GameCore.Models.Conditions.Abstractions;
 
 namespace GameCore.Models.Conditions
 {
@@ -11,6 +12,15 @@ namespace GameCore.Models.Conditions
         {
             RiposteCount = riposteCount;
             RiposteDamage = riposteDamage;
+        }
+
+        /// <summary>
+        /// Counter attacks pile up, the hardest one sets the damage.
+        /// </summary>
+        internal void RenewRiposte(int riposteCount, int riposteDamage)
+        {
+            RiposteCount += riposteCount;
+            RiposteDamage = Math.Max(riposteDamage, RiposteDamage);
         }
     }
 }

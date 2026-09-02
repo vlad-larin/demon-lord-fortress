@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 using GameCore.Models.HeroPartyStrategies.Helpers;
@@ -37,8 +38,13 @@ namespace GameCore.Models.CombatActions
 
             foreach (var holyEnemy in holyEnemies)
             {
-                holyEnemy.Conditions.Add(new Taunted(actor));
+                var taunted = holyEnemy.GetCondition<Taunted>();
+                if (taunted == null)
+                    holyEnemy.Conditions.Add(new Taunted(actor));
+                else
+                    taunted.Retaunt(actor);
 
+                // TEMPORARY: replace with condition processing during executions
                 var retaliation = FindStrongestAttack(holyEnemy, actor);
                 if (retaliation == null)
                 {

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
@@ -30,8 +30,6 @@ namespace GameCore.Models.CombatActions
             Encounter encounter
         )
         {
-            // Exposure is a condition that later attacks are supposed to read, and there is no
-            // condition storage on a combatant yet, so this only reports the opening.
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
@@ -39,17 +37,9 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            InflictExposed(target, ExposeRounds);
+            target.ApplyForRounds<Exposed>(ExposeRounds);
 
             return gameEvents;
-        }
-
-        private void InflictExposed(Combatant target, int rounds)
-        {
-            if (target.Conditions.FirstOrDefault(c => c is Exposed) is Exposed exposed)
-                exposed.AddRounds(rounds);
-            else
-                target.Conditions.Add(new Exposed(rounds));
         }
     }
 }

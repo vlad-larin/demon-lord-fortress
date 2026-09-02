@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
@@ -41,13 +42,19 @@ namespace GameCore.Models.CombatActions
 
             gameEvents.Add(new SimpleGameEvent($"{actor.Class} steps in front of {target.Class}"));
 
-            // Damage reduction cannot be applied yet, so protecting means soaking the blows
-            // instead: incoming attacks that were aimed at the ward are pointed at the
-            // protector. Only the intents left in this round can be redirected, ProtectRounds
-            // is not tracked anywhere.
+            var protection = target.GetCondition<Protected>();
+            if (protection == null)
+                target.Conditions.Add(new Protected(actor, ProtectRounds));
+            else
+                protection.RenewProtection(actor, ProtectRounds);
+
+            // TEMPORARY: replace with condition processing during executions. Damage reduction
+            // cannot be applied yet, so protecting means soaking the blows instead: incoming
+            // attacks aimed at the ward are pointed at the protector.
             var incomingAttacks = encounter
                 .Intents.Where(i =>
                     i.Target == target
+                    && !i.IsExecuted
                     && i.Actor.Side != actor.Side
                     && i.Action.GetDamage(i.Actor, target) > 0
                 )
@@ -62,8 +69,6 @@ namespace GameCore.Models.CombatActions
                     )
                 );
             }
-
-            target.Conditions.Add(new Protected(actor, ProtectRounds));
 
             return gameEvents;
         }

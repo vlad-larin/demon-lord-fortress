@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
@@ -38,10 +39,19 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            target.Conditions.Add(new Taunted(actor));
-            actor.Conditions.Add(
-                new Riposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage)
-            );
+            var taunted = target.GetCondition<Taunted>();
+            if (taunted == null)
+                target.Conditions.Add(new Taunted(actor));
+            else
+                taunted.Retaunt(actor);
+
+            var riposte = actor.GetCondition<Riposte>();
+            if (riposte == null)
+                actor.Conditions.Add(
+                    new Riposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage)
+                );
+            else
+                riposte.RenewRiposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage);
 
             return gameEvents;
         }

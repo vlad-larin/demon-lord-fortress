@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
@@ -33,28 +34,22 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(new SimpleGameEvent($"{actor.Class} stuns {target.Class}!"));
 
-            // Only the current round can be taken away: nothing tracks conditions across
-            // rounds, so StunRounds is reported but not enforced.
-            var stunnedIntents = encounter.Intents.Where(i => i.Actor == target).ToList();
+            target.ApplyForRounds<Stunned>(StunRounds);
+
+            // TEMPORARY: replace with condition processing during executions
+            var stunnedIntents = encounter
+                .Intents.Where(i => i.Actor == target && !i.IsExecuted)
+                .ToList();
             foreach (var stunnedIntent in stunnedIntents)
             {
                 stunnedIntent.Action = new Wait();
                 stunnedIntent.Target = null;
             }
 
-            InflictStunned(target, StunRounds);
             if (stunnedIntents.Count > 0)
                 gameEvents.Add(new SimpleGameEvent($"{target.Class} loses their action"));
 
             return gameEvents;
-        }
-
-        private void InflictStunned(Combatant target, int rounds)
-        {
-            if (target.Conditions.FirstOrDefault(c => c is Stunned) is Stunned stunned)
-                stunned.AddRounds(rounds);
-            else
-                target.Conditions.Add(new Stunned(rounds));
         }
     }
 }

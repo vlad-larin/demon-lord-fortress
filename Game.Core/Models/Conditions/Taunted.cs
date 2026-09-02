@@ -10,5 +10,13 @@ namespace GameCore.Models.Conditions
         {
             TauntedBy = tauntedBy;
         }
+
+        /// <summary>
+        /// The latest provocation is the one that sticks.
+        /// </summary>
+        internal void Retaunt(Combatant tauntedBy)
+        {
+            TauntedBy = tauntedBy;
+        }
     }
 }

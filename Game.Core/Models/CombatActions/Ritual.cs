@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
@@ -30,31 +30,24 @@ namespace GameCore.Models.CombatActions
             Encounter encounter
         )
         {
-            // Combatants have no damage modifier to grow, so the ritual only makes the caster
-            // look more dangerous, which is what actually pulls the attention of the party.
             var gameEvents = new List<GameEventBase>();
-
-            actor.PerceivedDanger += Strength;
-            IncreaseStrength(target, Strength);
-
             gameEvents.Add(
                 new SimpleGameEvent(
                     $"{actor.Class} channels a dark ritual and grows {Strength} more terrifying"
                 )
             );
 
-            return gameEvents;
-        }
+            // TEMPORARY: the growing strength should come from the condition alone once
+            // condition processing is in place.
+            actor.PerceivedDanger += Strength;
 
-        private void IncreaseStrength(Combatant target, int addStrength)
-        {
-            if (
-                target.Conditions.FirstOrDefault(c => c is Strengthened)
-                is Strengthened strengthened
-            )
-                strengthened.AddStrength(addStrength);
+            var strengthened = actor.GetCondition<Strengthened>();
+            if (strengthened == null)
+                actor.Conditions.Add(new Strengthened(Strength));
             else
-                target.Conditions.Add(new Strengthened(addStrength));
+                strengthened.AddStrength(Strength);
+
+            return gameEvents;
         }
     }
 }

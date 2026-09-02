@@ -1,4 +1,5 @@
-﻿using GameCore.Models.Conditions.Abstractions;
+﻿using System;
+using GameCore.Models.Conditions.Abstractions;
 
 namespace GameCore.Models.Conditions
 {
@@ -11,6 +12,15 @@ namespace GameCore.Models.Conditions
         {
             ProtectedBy = protectedBy;
             ProtectRounds = protectRounds;
+        }
+
+        /// <summary>
+        /// The newest protector takes over, keeping whichever cover lasts longer.
+        /// </summary>
+        internal void RenewProtection(Combatant protectedBy, int protectRounds)
+        {
+            ProtectedBy = protectedBy;
+            ProtectRounds = Math.Max(protectRounds, ProtectRounds);
         }
     }
 }

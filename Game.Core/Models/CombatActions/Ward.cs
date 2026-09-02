@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
 
@@ -32,8 +32,6 @@ namespace GameCore.Models.CombatActions
             Encounter encounter
         )
         {
-            // A ward is a pool of shield points that absorbs damage for WardRounds rounds.
-            // Combatants have nowhere to keep it, so the shield is only announced.
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
@@ -41,17 +39,13 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            ApplyWard(target, WardRounds, Durability);
+            var warded = target.GetCondition<Warded>();
+            if (warded == null)
+                target.Conditions.Add(new Warded(wardRounds: WardRounds, durability: Durability));
+            else
+                warded.RenewWard(wardRounds: WardRounds, durability: Durability);
 
             return gameEvents;
-        }
-
-        private void ApplyWard(Combatant target, int wardRounds, int durability)
-        {
-            if (target.Conditions.FirstOrDefault(c => c is Warded) is Warded warded)
-                warded.RenewWard(wardRounds: wardRounds, durability: durability);
-            else
-                target.Conditions.Add(new Warded(wardRounds: wardRounds, durability: durability));
         }
     }
 }
