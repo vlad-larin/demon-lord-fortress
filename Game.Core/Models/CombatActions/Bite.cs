@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -28,5 +29,26 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => GetEnemies(actor, combatants);
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            var targetIsWounded = target.Hp < target.MaxHp;
+            var damage = targetIsWounded
+                ? Convert.ToInt32(Math.Ceiling(decimal.Multiply(Damage, 1.5m)))
+                : Damage;
+            var heal = Math.Ceiling(decimal.Divide(damage, 2m));
+
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(new HpReducedGameEvent(target, damage));
+
+            target.Hp -= damage;
+            actor.Hp = Convert.ToInt32(Math.Max(0, Math.Min(actor.MaxHp - actor.Hp, heal)));
+
+            return gameEvents;
+        }
     }
 }

@@ -39,6 +39,8 @@ namespace GameEngine.PlayerActionHandlers
             strategy.SetHeroPartyIntents();
 
             encounter.Phase = EncounterPhase.Planning;
+            encounter.HeroPartyStrategy = strategy;
+
             return new PlayerActionResult(GameInstance, gameEvents);
         }
 

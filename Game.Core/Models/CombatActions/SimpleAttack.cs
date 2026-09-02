@@ -20,5 +20,10 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => GetEnemies(actor, combatants);
+
+        public override void Execute(Combatant actor, Combatant target, Encounter encounter)
+        {
+            target.Hp -= Damage;
+        }
     }
 }

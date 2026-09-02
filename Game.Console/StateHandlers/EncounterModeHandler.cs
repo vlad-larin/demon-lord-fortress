@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
 using GameConsoleApp.Models;
 using GameConsoleApp.StateHandlers.Abstractions;
@@ -216,6 +215,13 @@ namespace GameConsoleApp.StateHandlers
         private GameModeHandlerResponse ProcessKeyAtPlanningPhaseChooseMonster(ConsoleKeyInfo key)
         {
             var option = key.KeyChar.ToString().ToUpperInvariant();
+
+            if (option == " ")
+                return new GameModeHandlerResponse
+                {
+                    ActionType = GameModeHandlerActionType.Execute,
+                    Action = new ExecuteBattlePlanAction(),
+                };
 
             if (
                 int.TryParse(option, out var optionNumber)

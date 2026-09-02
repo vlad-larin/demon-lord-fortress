@@ -77,5 +77,19 @@ namespace GameCore.Models.HeroPartyStrategies
 
             return events;
         }
+
+        public void RetargetAction(CombatIntent intent)
+        {
+            var bestAttack = AttackCalculator.FindStrongestAttack(intent.Actor, GetEnemies());
+            if (bestAttack != default)
+            {
+                intent.Action = bestAttack.Action;
+                intent.Target = bestAttack.Target;
+                return;
+            }
+
+            intent.Action = new Wait();
+            intent.Target = null;
+        }
     }
 }

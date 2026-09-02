@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -25,5 +25,11 @@ namespace GameCore.Models.CombatActions
 
         protected List<Combatant> GetAllies(Combatant actor, List<Combatant> combatants) =>
             combatants.Where(c => c.Side == actor.Side).ToList();
+
+        public abstract IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        );
     }
 }
