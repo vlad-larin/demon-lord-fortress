@@ -38,6 +38,9 @@ namespace GameConsoleApp.StateHandlers
                 case EncounterPhase.Planning:
                     RenderPlanningPrompt();
                     break;
+                case EncounterPhase.Resolution:
+                    RenderResolutionPrompt();
+                    break;
                 default:
                     throw new NotImplementedException($"Unknown phase: {encounter.Phase}");
             }
@@ -54,6 +57,8 @@ namespace GameConsoleApp.StateHandlers
                     return ProcessKeyAtBriefingPhase(key);
                 case EncounterPhase.Planning:
                     return ProcessKeyAtPlanningPhase(key);
+                case EncounterPhase.Resolution:
+                    return ProcessKeyAtResolutionPhase(key);
                 default:
                     throw new NotImplementedException(
                         $"[EncounterModeHandler] Unexpected phase: {encounter.Phase}"
@@ -463,6 +468,31 @@ namespace GameConsoleApp.StateHandlers
             }
         }
         #endregion
+
+        #region Resolution
+        private void RenderResolutionPrompt()
+        {
+            RenderFrameDivider();
+            RenderFrameLine();
+            RenderFrameLine("[Space]: Proceed");
+            RenderFrameFinish();
+        }
+
+        private GameModeHandlerResponse ProcessKeyAtResolutionPhase(ConsoleKeyInfo key)
+        {
+            var option = key.KeyChar.ToString().ToUpperInvariant();
+            if (option == " ")
+            {
+                return new GameModeHandlerResponse
+                {
+                    ActionType = GameModeHandlerActionType.Execute,
+                    Action = new FinishEncounterRoundResolutionAction(),
+                };
+            }
+            return GameModeHandlerResponse.NoAction();
+        }
+        #endregion
+
 
         private enum InnerState
         {

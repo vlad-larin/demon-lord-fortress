@@ -31,6 +31,9 @@ namespace GameEngine.PlayerActionHandlers
                     continue;
                 }
 
+                // Change intentions due to conditions
+
+                // Retarget impossible targets
                 if (intent.Target != null && !encounter.Combatants.Contains(intent.Target))
                 {
                     encounter.HeroPartyStrategy.RetargetAction(intent);
@@ -47,50 +50,33 @@ namespace GameEngine.PlayerActionHandlers
                 intent.IsExecuted = true;
 
                 // Remove dead combatants
+                var deathEvents = CheckForDeadCombatants();
+                gameEvents.AddRange(deathEvents);
 
-                // Check victory conditions
+                // Check if any side has combatants alive
+                if (
+                    !encounter.Combatants.Any(c => c.Side == ConflictSide.Heroes)
+                    || !encounter.Combatants.Any(c => c.Side == ConflictSide.DemonLord)
+                )
+                    break;
             }
 
+            GameInstance.Encounter.Phase = EncounterPhase.Resolution;
+
             return new PlayerActionResult(GameInstance, gameEvents);
+        }
 
-            //var actor = encounter.Combatants.Single(c => c.Id == playerAction.ActorId);
-            //if (actor.Side != ConflictSide.DemonLord)
-            //    throw new InvalidOperationException("Only demon lord actions can be inserted");
+        private IEnumerable<GameEventBase> CheckForDeadCombatants()
+        {
+            var encounter = GameInstance.Encounter;
+            var deadCombatants = encounter.Combatants.Where(c => c.Hp <= 0).ToList();
+            foreach (var deadCombatant in deadCombatants)
+            {
+                encounter.Combatants.Remove(deadCombatant);
+                encounter.DeadCombatants.Add(deadCombatant);
+            }
 
-            //var target = encounter.Combatants.Single(c => c.Id == playerAction.TargetId);
-
-            //var intentsToDelete = encounter.Intents.FindAll(intent => intent.Actor == actor);
-
-            //var newIntent = new CombatIntent
-            //{
-            //    Actor = actor,
-            //    Action = playerAction.Intent.Action,
-            //    Target = target,
-            //};
-
-            //if (encounter.Intents.Count == playerAction.Index)
-            //{
-            //    encounter.Intents.Add(newIntent);
-            //    gameEvents.Add(new SimpleGameEvent("New intent added"));
-            //}
-            //else if (encounter.Intents[playerAction.Index].Actor.Side == ConflictSide.DemonLord)
-            //{
-            //    encounter.Intents[playerAction.Index] = newIntent;
-            //    gameEvents.Add(new SimpleGameEvent("Intent replaced"));
-            //}
-            //else
-            //{
-            //    encounter.Intents.Insert(playerAction.Index, newIntent);
-            //    gameEvents.Add(new SimpleGameEvent("New intent inserted"));
-            //}
-
-            //foreach (var intent in intentsToDelete)
-            //{
-            //    encounter.Intents.Remove(intent);
-            //    gameEvents.Add(new SimpleGameEvent("Old intent removed"));
-            //}
-
-            //return new PlayerActionResult(GameInstance, gameEvents);
+            return deadCombatants.Select(c => new CombatantDiedGameEvent(c));
         }
     }
 }

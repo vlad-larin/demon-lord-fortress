@@ -63,6 +63,10 @@ namespace GameEngine.Helpers
                 GameMode.Encounter,
                 gameInstance => new ExecuteBattlePlanActionHandler(gameInstance)
             );
+            Register<FinishEncounterRoundResolutionAction>(
+                GameMode.Encounter,
+                gameInstance => new FinishEncounterRoundResolutionActionHandler(gameInstance)
+            );
 
             return handlers;
         }
