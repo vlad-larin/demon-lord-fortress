@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GameCore.Models;
+using GameCore.Models.CombatActions;
 using GameCore.Models.GameEvents;
 using GameCore.PlayerActions;
 using GameEngine.Models;
@@ -33,16 +34,8 @@ namespace GameEngine.PlayerActionHandlers
 
                 // Change intentions due to conditions
 
-                // Retarget impossible targets
-                if (intent.Target != null && !encounter.Combatants.Contains(intent.Target))
-                {
-                    encounter.HeroPartyStrategy.RetargetAction(intent);
-                    gameEvents.Add(
-                        new SimpleGameEvent(
-                            $"Retargeted. {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
-                        )
-                    );
-                }
+                var retargetEvents = HandleMissingTarget(intent); // Retarget impossible targets
+                gameEvents.AddRange(retargetEvents);
 
                 // Execute the action
                 var executionEvents = intent.Action.Execute(intent.Actor, intent.Target, encounter);
@@ -64,6 +57,48 @@ namespace GameEngine.PlayerActionHandlers
             GameInstance.Encounter.Phase = EncounterPhase.Resolution;
 
             return new PlayerActionResult(GameInstance, gameEvents);
+        }
+
+        private IEnumerable<GameEventBase> HandleMissingTarget(CombatIntent intent)
+        {
+            var gameEvents = new List<GameEventBase>();
+
+            if (intent.Target == null) // No target => no retarget
+                return gameEvents;
+
+            var encounter = GameInstance.Encounter;
+            if (encounter.Combatants.Contains(intent.Target)) // Valid target => no retarget
+                return gameEvents;
+
+            switch (intent.Actor.Side)
+            {
+                case ConflictSide.Heroes:
+                    // Heroes re-target using their strategy
+                    encounter.HeroPartyStrategy.RetargetAction(intent);
+                    gameEvents.Add(
+                        new SimpleGameEvent(
+                            $"Retargeted. {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
+                        )
+                    );
+                    break;
+
+                case ConflictSide.DemonLord:
+                    // Monsters waste their action if their target is invalid
+                    // because the player is supposed to think the plan through
+                    intent.Action = new Wait();
+                    intent.Target = null;
+                    gameEvents.Add(
+                        new SimpleGameEvent(
+                            $"{intent.Actor.Class} wastes their action because target became unavailable"
+                        )
+                    );
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Unknown actor side: {intent.Actor.Side}");
+            }
+
+            return gameEvents;
         }
 
         private IEnumerable<GameEventBase> CheckForDeadCombatants()
