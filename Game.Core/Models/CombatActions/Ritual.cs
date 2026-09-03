@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using GameCore.Extensions;
+using GameCore.Models.Conditions;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -20,5 +23,31 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => new List<Combatant> { actor };
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(
+                new SimpleGameEvent(
+                    $"{actor.Class} channels a dark ritual and grows {Strength} more terrifying"
+                )
+            );
+
+            // TEMPORARY: the growing strength should come from the condition alone once
+            // condition processing is in place.
+            actor.PerceivedDanger += Strength;
+
+            var strengthened = actor.GetCondition<Strengthened>();
+            if (strengthened == null)
+                actor.Conditions.Add(new Strengthened(Strength));
+            else
+                strengthened.AddStrength(Strength);
+
+            return gameEvents;
+        }
     }
 }

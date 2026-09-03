@@ -2,5 +2,5 @@
 
 namespace GameCore.PlayerActions
 {
-    public class InitializeAction : IPlayerAction { }
+    public class ExecuteBattlePlanAction : IPlayerAction { }
 }

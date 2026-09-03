@@ -11,5 +11,7 @@ namespace GameCore.Interfaces
         int CalculateDecisionWeight();
 
         IEnumerable<GameEventBase> SetHeroPartyIntents();
+
+        void RetargetAction(CombatIntent intent);
     }
 }

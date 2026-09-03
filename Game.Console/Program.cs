@@ -20,6 +20,8 @@ namespace GameConsoleApp
             var state = mainChannel.Execute(new InitializeAction());
             while (true)
             {
+                WipeWindowWithEmptyLines();
+
                 Console.WriteLine($"State: {state}");
                 RenderState(state);
                 var keyInfo = Console.ReadKey();
@@ -98,6 +100,12 @@ namespace GameConsoleApp
                         $"[ProcessKey] Unknown game mode: {state.GameMode}"
                     );
             }
+        }
+
+        private static void WipeWindowWithEmptyLines()
+        {
+            for (int i = 0; i < Console.WindowHeight; i++)
+                Console.WriteLine();
         }
     }
 }

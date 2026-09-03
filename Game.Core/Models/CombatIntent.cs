@@ -7,6 +7,7 @@ namespace GameCore.Models
         public Combatant Actor { get; set; }
         public CombatActionBase Action { get; set; }
         public Combatant Target { get; set; }
+        public bool IsExecuted { get; set; }
 
         public CombatIntent() { }
 

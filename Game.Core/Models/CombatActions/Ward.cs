@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using GameCore.Extensions;
+using GameCore.Models.Conditions;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -22,5 +25,27 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => GetAllies(actor, combatants);
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(
+                new SimpleGameEvent(
+                    $"{actor.Class} wraps {target.Class} in a ward of {Durability} points for {WardRounds} rounds"
+                )
+            );
+
+            var warded = target.GetCondition<Warded>();
+            if (warded == null)
+                target.Conditions.Add(new Warded(wardRounds: WardRounds, durability: Durability));
+            else
+                warded.RenewWard(wardRounds: WardRounds, durability: Durability);
+
+            return gameEvents;
+        }
     }
 }

@@ -59,6 +59,14 @@ namespace GameEngine.Helpers
                 GameMode.Encounter,
                 gameInstance => new InsertCombatActionIntoBattlePlanActionHandler(gameInstance)
             );
+            Register<ExecuteBattlePlanAction>(
+                GameMode.Encounter,
+                gameInstance => new ExecuteBattlePlanActionHandler(gameInstance)
+            );
+            Register<FinishEncounterRoundResolutionAction>(
+                GameMode.Encounter,
+                gameInstance => new FinishEncounterRoundResolutionActionHandler(gameInstance)
+            );
 
             return handlers;
         }
@@ -69,12 +77,9 @@ namespace GameEngine.Helpers
         )
         {
             var playerActionType = playerAction.GetType();
-            if (
-                !Handlers.TryGetValue(
-                    (playerActionType, gameInstance.GameMode),
-                    out var createHandler
-                )
-            )
+            var gameMode = gameInstance.GameMode;
+
+            if (!Handlers.TryGetValue((playerActionType, gameMode), out var createHandler))
                 throw new NotImplementedException(
                     $"[PlayerActionHandlerResolver] Not found resolver for {playerActionType.Name} that supports {gameInstance.GameMode} game mode"
                 );

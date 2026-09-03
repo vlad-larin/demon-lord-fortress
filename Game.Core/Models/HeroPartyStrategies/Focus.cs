@@ -174,5 +174,43 @@ namespace GameCore.Models.HeroPartyStrategies
                 ? ((Combatant Actor, CombatActionBase Action)?)null
                 : killingBlows[Rnd.Next(killingBlows.Count)];
         }
+
+        public void RetargetAction(CombatIntent intent)
+        {
+            var mostDangerousEnemy = MostDangerousEnemy();
+            var mostDangerousEnemyKillingBlow = GetKillingBlowForEnemy(
+                mostDangerousEnemy,
+                new Combatant[] { intent.Actor }
+            );
+            if (mostDangerousEnemyKillingBlow != null)
+            {
+                intent.Action = mostDangerousEnemyKillingBlow?.Action;
+                intent.Target = mostDangerousEnemy;
+                return;
+            }
+
+            var lowestHpEnemy = LowestHpEnemy();
+            var lowestHpEnemyKillingBlow = GetKillingBlowForEnemy(
+                lowestHpEnemy,
+                new Combatant[] { intent.Actor }
+            );
+            if (lowestHpEnemyKillingBlow != null)
+            {
+                intent.Action = lowestHpEnemyKillingBlow?.Action;
+                intent.Target = lowestHpEnemy;
+                return;
+            }
+
+            var bestAttack = FindStrongestAttack(intent.Actor, lowestHpEnemy);
+            if (bestAttack != default)
+            {
+                intent.Action = bestAttack.Action;
+                intent.Target = lowestHpEnemy;
+                return;
+            }
+
+            intent.Action = new Wait();
+            intent.Target = null;
+        }
     }
 }

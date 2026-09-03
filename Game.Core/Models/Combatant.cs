@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameCore.Models.CombatActions;
+using GameCore.Models.Conditions.Abstractions;
 
 namespace GameCore.Models
 {
@@ -12,6 +13,7 @@ namespace GameCore.Models
         public int Hp { get; set; }
         public int MaxHp { get; set; }
         public int PerceivedDanger { get; set; }
-        public List<CombatActionBase> Actions { get; set; }
+        public List<CombatActionBase> Actions { get; set; } = new List<CombatActionBase>();
+        public List<ConditionBase> Conditions { get; set; } = new List<ConditionBase>();
     }
 }

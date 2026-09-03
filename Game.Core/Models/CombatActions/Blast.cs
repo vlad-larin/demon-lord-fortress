@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Models.GameEvents;
 
 namespace GameCore.Models.CombatActions
 {
@@ -20,5 +21,20 @@ namespace GameCore.Models.CombatActions
             Combatant actor,
             List<Combatant> combatants
         ) => GetEnemies(actor, combatants);
+
+        public override IEnumerable<GameEventBase> Execute(
+            Combatant actor,
+            Combatant target,
+            Encounter encounter
+        )
+        {
+            var gameEvents = new List<GameEventBase>();
+            gameEvents.Add(new SimpleGameEvent($"{actor.Class} blasts {target.Class}!"));
+            gameEvents.Add(new HpReducedGameEvent(target, Damage));
+
+            target.Hp -= Damage;
+
+            return gameEvents;
+        }
     }
 }
