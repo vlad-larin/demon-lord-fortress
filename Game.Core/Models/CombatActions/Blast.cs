@@ -30,10 +30,7 @@ namespace GameCore.Models.CombatActions
         {
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(new SimpleGameEvent($"{actor.Class} blasts {target.Class}!"));
-            gameEvents.Add(new HpReducedGameEvent(target, Damage));
-
-            target.Hp -= Damage;
-
+            gameEvents.AddRange(target.InflictDamage(Damage));
             return gameEvents;
         }
     }

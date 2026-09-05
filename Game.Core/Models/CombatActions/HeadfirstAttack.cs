@@ -39,11 +39,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            // HpReducedGameEvent snapshots the HPs of the target, so it has to be built
-            // before the hit lands.
-            gameEvents.Add(new HpReducedGameEvent(target, Damage));
-
-            target.Hp -= Damage;
+            gameEvents.AddRange(target.InflictDamage(Damage));
             actor.ApplyForRounds<Exposed>(ExposureRounds);
 
             return gameEvents;

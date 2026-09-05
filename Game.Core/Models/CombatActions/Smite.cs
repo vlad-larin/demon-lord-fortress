@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using GameCore.Models.GameEvents;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GameCore.Models.CombatActions
 {
@@ -30,10 +31,7 @@ namespace GameCore.Models.CombatActions
         {
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(new SimpleGameEvent($"{actor.Class} calls down holy wrath!"));
-            gameEvents.Add(new HpReducedGameEvent(target, HolyDamage));
-
-            target.Hp -= HolyDamage;
-
+            gameEvents.AddRange(target.InflictDamage(HolyDamage));
             return gameEvents;
         }
     }

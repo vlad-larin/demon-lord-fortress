@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GameCore.Models.GameEvents;
+using GameCore.Models.HeroPartyStrategies.Helpers;
 
 namespace GameCore.Models.CombatActions
 {
@@ -47,7 +48,8 @@ namespace GameCore.Models.CombatActions
 
             gameEvents.Add(new HpReducedGameEvent(target, damage));
 
-            target.Hp -= damage;
+            gameEvents.AddRange(target.InflictDamage(damage));
+
             actor.Hp += Convert.ToInt32(Math.Max(0, Math.Min(actor.MaxHp - actor.Hp, heal)));
 
             return gameEvents;

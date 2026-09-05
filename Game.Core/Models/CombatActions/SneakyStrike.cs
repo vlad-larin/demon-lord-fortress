@@ -28,13 +28,8 @@ namespace GameCore.Models.CombatActions
             Encounter encounter
         )
         {
-            // The bonus damage against an exposed target cannot be applied yet:
-            // combatants carry no conditions, so exposure is not tracked anywhere.
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new HpReducedGameEvent(target, Damage));
-
-            target.Hp -= Damage;
-
+            gameEvents.AddRange(target.InflictDamage(Damage));
             return gameEvents;
         }
     }
