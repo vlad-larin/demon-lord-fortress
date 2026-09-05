@@ -78,19 +78,6 @@ namespace GameConsoleApp.StateHandlers
             RenderFrameFinish();
         }
 
-        private void RenderBattleSides()
-        {
-            RenderFrameLine("ENEMIES:");
-            foreach (var hero in GetHeroes())
-                RenderFrameLine($"* {hero.Class}");
-
-            RenderFrameLine();
-
-            RenderFrameLine("YOUR FORCES:");
-            foreach (var monster in GetMonsters())
-                RenderFrameLine($"* {monster.Class}");
-        }
-
         private GameModeHandlerResponse ProcessKeyAtBriefingPhase(ConsoleKeyInfo key)
         {
             var option = key.KeyChar.ToString().ToUpperInvariant();
@@ -111,37 +98,19 @@ namespace GameConsoleApp.StateHandlers
         {
             var encounter = State.Encounter;
 
-            Console.WriteLine();
-
-            Console.WriteLine("Enemies:");
-            foreach (
-                var enemyCombatant in encounter.Combatants.Where(x => x.Side == ConflictSide.Heroes)
-            )
-            {
-                Console.WriteLine($"* {enemyCombatant.Class}");
-            }
-
-            Console.WriteLine();
-
-            Console.WriteLine("Your forces:");
-            foreach (
-                var alliedCombatant in encounter.Combatants.Where(x =>
-                    x.Side == ConflictSide.DemonLord
-                )
-            )
-            {
-                Console.WriteLine($"* {alliedCombatant.Class}");
-            }
-
             RenderFrameStart();
+
+            RenderFrameLine("BATTLE PLANNING");
+            RenderFrameLine();
+            RenderBattleSides();
+
+            RenderFrameDivider();
 
             RenderFrameLine("BATTLE PLAN");
             RenderFrameLine();
             foreach (var intent in encounter.Intents)
             {
-                RenderFrameLine(
-                    $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
-                );
+                RenderFrameLine($"* {CombatantRenderer.RenderIntent(intent)}");
             }
             RenderFrameLine();
 
@@ -172,6 +141,32 @@ namespace GameConsoleApp.StateHandlers
 
         private Combatant[] GetMonsters() =>
             State.Encounter.Combatants.Where(x => x.Side == ConflictSide.DemonLord).ToArray();
+
+        private void RenderBattleSides()
+        {
+            RenderFrameLine("ENEMIES:");
+            RenderSideRoster(ConflictSide.Heroes);
+
+            RenderFrameLine();
+
+            RenderFrameLine("YOUR FORCES:");
+            RenderSideRoster(ConflictSide.DemonLord);
+        }
+
+        /// <summary>
+        /// Everyone who entered the battle on that side, the fallen included, so a wiped
+        /// side does not simply vanish from the roster.
+        /// </summary>
+        private void RenderSideRoster(ConflictSide side)
+        {
+            var encounter = State.Encounter;
+            var roster = encounter
+                .Combatants.Concat(encounter.DeadCombatants)
+                .Where(combatant => combatant.Side == side);
+
+            foreach (var combatant in roster)
+                RenderFrameLine($"* {CombatantRenderer.Render(combatant)}");
+        }
 
         private GameModeHandlerResponse ProcessKeyAtPlanningPhase(ConsoleKeyInfo key)
         {
@@ -209,7 +204,9 @@ namespace GameConsoleApp.StateHandlers
             {
                 var monster = monsters[i];
                 var isAssigned = State.Encounter.Intents.Any(intent => intent.Actor == monster);
-                RenderFrameLine($"[{i + 1}]: {monster.Class}{(isAssigned ? " (assigned)" : "")}");
+                RenderFrameLine(
+                    $"[{i + 1}]: {CombatantRenderer.Render(monster)}{(isAssigned ? " (assigned)" : "")}"
+                );
             }
             RenderFrameLine();
 
@@ -246,7 +243,7 @@ namespace GameConsoleApp.StateHandlers
         private void RenderChooseActionPrompt()
         {
             RenderFrameDivider();
-            RenderFrameLine($"MONSTER: {selectedMonster.Class}");
+            RenderFrameLine($"MONSTER: {CombatantRenderer.Render(selectedMonster)}");
             RenderFrameLine("CHOOSE ACTION");
             RenderFrameLine();
 
@@ -288,7 +285,7 @@ namespace GameConsoleApp.StateHandlers
         private void RenderChooseActionTargetPrompt()
         {
             RenderFrameDivider();
-            RenderFrameLine($"MONSTER: {selectedMonster.Class}");
+            RenderFrameLine($"MONSTER: {CombatantRenderer.Render(selectedMonster)}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
             RenderFrameLine($"CHOOSE TARGET");
             RenderFrameLine();
@@ -300,7 +297,7 @@ namespace GameConsoleApp.StateHandlers
 
             for (int i = 0; i < targets.Count; i++)
             {
-                RenderFrameLine($"[{i + 1}]: {targets[i].Class}");
+                RenderFrameLine($"[{i + 1}]: {CombatantRenderer.Render(targets[i])}");
             }
             RenderFrameLine();
 
@@ -341,9 +338,9 @@ namespace GameConsoleApp.StateHandlers
         private void RenderChooseActionPositionPrompt()
         {
             RenderFrameDivider();
-            RenderFrameLine($"MONSTER: {selectedMonster.Class}");
+            RenderFrameLine($"MONSTER: {CombatantRenderer.Render(selectedMonster)}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
-            RenderFrameLine($"TARGET: {selectedTarget.Class}");
+            RenderFrameLine($"TARGET: {CombatantRenderer.Render(selectedTarget)}");
             RenderFrameLine("CHOOSE INSERT POSITION");
             RenderFrameLine();
 
@@ -364,16 +361,14 @@ namespace GameConsoleApp.StateHandlers
                     else
                     {
                         RenderFrameLine(
-                            $"[{availableSlots.IndexOf(availableSlot) + 1}] {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
+                            $"[{availableSlots.IndexOf(availableSlot) + 1}] {CombatantRenderer.RenderIntent(intent)}"
                         );
                     }
                     renderedSlots.Add(availableSlot);
                 }
                 if (intent.Actor.Side == ConflictSide.Heroes)
                 {
-                    RenderFrameLine(
-                        $"* {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
-                    );
+                    RenderFrameLine($"* {CombatantRenderer.RenderIntent(intent)}");
                 }
             }
 
@@ -472,7 +467,10 @@ namespace GameConsoleApp.StateHandlers
         #region Resolution
         private void RenderResolutionPrompt()
         {
-            RenderFrameDivider();
+            RenderFrameStart();
+            RenderFrameLine("ROUND RESOLVED");
+            RenderFrameLine();
+            RenderBattleSides();
             RenderFrameLine();
             RenderFrameLine("[Space]: Proceed");
             RenderFrameFinish();
