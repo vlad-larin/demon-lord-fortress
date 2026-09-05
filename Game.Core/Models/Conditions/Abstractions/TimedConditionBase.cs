@@ -1,4 +1,6 @@
-﻿namespace GameCore.Models.Conditions.Abstractions
+﻿using System;
+
+namespace GameCore.Models.Conditions.Abstractions
 {
     /// <summary>
     /// A condition whose only state is how much longer it lasts. Inflict and prolong these
@@ -12,6 +14,11 @@
         internal void AddRounds(int rounds)
         {
             RoundsLeft += rounds;
+        }
+
+        public void Decay()
+        {
+            RoundsLeft--;
         }
     }
 }

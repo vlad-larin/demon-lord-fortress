@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using GameCore.Models;
 using GameCore.Models.CombatActions;
+using GameCore.Models.Conditions.Abstractions;
 using GameCore.Models.GameEvents;
 using GameCore.PlayerActions;
+using GameEngine.Ai;
 using GameEngine.Models;
 using GameEngine.PlayerActionHandlers.Abstractions;
 
@@ -51,6 +53,7 @@ namespace GameEngine.PlayerActionHandlers
                 )
                     break;
             }
+            gameEvents.AddRange(DecayTimeBasedConditions(encounter.Combatants));
 
             GameInstance.Encounter.Phase = EncounterPhase.Resolution;
 
@@ -118,6 +121,25 @@ namespace GameEngine.PlayerActionHandlers
             }
 
             return deadCombatants.Select(c => new CombatantDiedGameEvent(c));
+        }
+
+        private IEnumerable<GameEventBase> DecayTimeBasedConditions(List<Combatant> combatants)
+        {
+            foreach (var combatant in combatants)
+            {
+                foreach (var condition in combatant.Conditions)
+                {
+                    if (condition is TimedConditionBase timedCondition)
+                    {
+                        timedCondition.Decay();
+                    }
+                }
+
+                combatant.Conditions.RemoveAll(c =>
+                    c is TimedConditionBase timedCondition && timedCondition.RoundsLeft <= 0
+                );
+            }
+            return new CombatantDiedGameEvent[0];
         }
     }
 }
