@@ -32,10 +32,8 @@ namespace GameEngine.PlayerActionHandlers
                     continue;
                 }
 
-                // Change intentions due to conditions
-
-                var retargetEvents = HandleMissingTarget(intent); // Retarget impossible targets
-                gameEvents.AddRange(retargetEvents);
+                gameEvents.AddRange(UpdateIntentAccordingToConditions(intent));
+                gameEvents.AddRange(HandleMissingTarget(intent));
 
                 // Execute the action
                 var executionEvents = intent.Action.Execute(intent.Actor, intent.Target, encounter);
@@ -57,6 +55,14 @@ namespace GameEngine.PlayerActionHandlers
             GameInstance.Encounter.Phase = EncounterPhase.Resolution;
 
             return new PlayerActionResult(GameInstance, gameEvents);
+        }
+
+        private List<GameEventBase> UpdateIntentAccordingToConditions(CombatIntent intent)
+        {
+            var gameEvents = new List<GameEventBase>();
+            foreach (var condition in intent.Actor.Conditions)
+                gameEvents.AddRange(condition.UpdateIntentBeforeExecution(intent));
+            return gameEvents;
         }
 
         private IEnumerable<GameEventBase> HandleMissingTarget(CombatIntent intent)
