@@ -20,5 +20,7 @@ namespace GameCore.Models.Conditions.Abstractions
         {
             RoundsLeft--;
         }
+
+        public override bool ShouldBeRemoved() => RoundsLeft <= 0;
     }
 }

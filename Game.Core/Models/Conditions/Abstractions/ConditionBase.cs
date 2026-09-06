@@ -15,8 +15,19 @@ namespace GameCore.Models.Conditions.Abstractions
 
         /// <summary>
         /// Default damage multiplier is 1 - condition does not change the amount of incoming damage.
-        /// Override in the conditions that modify that amount;
+        /// Override this in the conditions that change the incoming damage.
         /// </summary>
         public virtual decimal GetIncomingDamageMultiplier() => 1;
+
+        /// <summary>
+        /// Default modifier is 0 - condition does not change the amount of incoming damage.
+        /// Override this in the conditions that change the incoming damage.
+        /// </summary>
+        public virtual int GetIncomingDamageFlatModifier(int actualDamage) => 0;
+
+        /// <summary>
+        /// Return true if you want the condition to be cleared at the end of the round.
+        /// </summary>
+        public virtual bool ShouldBeRemoved() => false;
     }
 }

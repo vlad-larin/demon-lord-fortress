@@ -19,13 +19,16 @@ namespace GameCore.Models
 
         internal IEnumerable<GameEventBase> InflictDamage(int damage)
         {
-            var modifier = 1m;
+            var multiplier = 1m;
             foreach (var condition in Conditions)
-                modifier = modifier * condition.GetIncomingDamageMultiplier();
+                multiplier = multiplier * condition.GetIncomingDamageMultiplier();
 
             var actualDamage = Convert.ToInt32(
-                Math.Round(damage * modifier, 0, MidpointRounding.AwayFromZero)
+                Math.Round(damage * multiplier, 0, MidpointRounding.AwayFromZero)
             );
+
+            foreach (var condition in Conditions)
+                actualDamage = actualDamage + condition.GetIncomingDamageFlatModifier(actualDamage);
 
             var gameEvent = new HpReducedGameEvent(this, actualDamage);
             Hp -= actualDamage;

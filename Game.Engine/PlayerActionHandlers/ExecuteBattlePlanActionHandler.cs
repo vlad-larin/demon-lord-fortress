@@ -53,7 +53,7 @@ namespace GameEngine.PlayerActionHandlers
                 )
                     break;
             }
-            gameEvents.AddRange(DecayTimeBasedConditions(encounter.Combatants));
+            gameEvents.AddRange(DecayConditions(encounter.Combatants));
 
             GameInstance.Encounter.Phase = EncounterPhase.Resolution;
 
@@ -123,7 +123,7 @@ namespace GameEngine.PlayerActionHandlers
             return deadCombatants.Select(c => new CombatantDiedGameEvent(c));
         }
 
-        private IEnumerable<GameEventBase> DecayTimeBasedConditions(List<Combatant> combatants)
+        private IEnumerable<GameEventBase> DecayConditions(List<Combatant> combatants)
         {
             foreach (var combatant in combatants)
             {
@@ -135,8 +135,10 @@ namespace GameEngine.PlayerActionHandlers
                     }
                 }
 
-                combatant.Conditions.RemoveAll(c =>
-                    c is TimedConditionBase timedCondition && timedCondition.RoundsLeft <= 0
+                combatant.Conditions.RemoveAll(c => c.ShouldBeRemoved());
+
+                    c is TimedConditionBase timedCondition && timedConditi
+                    on.RoundsLeft <= 0
                 );
             }
             return new CombatantDiedGameEvent[0];
