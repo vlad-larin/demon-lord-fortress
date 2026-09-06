@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
@@ -37,19 +36,6 @@ namespace GameCore.Models.CombatActions
             );
 
             target.ApplyForRounds<Distracted>(DistractRounds);
-
-            // TEMPORARY: replace with condition processing during executions
-            var distractedIntents = encounter
-                .Intents.Where(i => i.Actor == target && !i.IsExecuted)
-                .ToList();
-            foreach (var distractedIntent in distractedIntents)
-            {
-                distractedIntent.Action = new Wait();
-                distractedIntent.Target = null;
-            }
-
-            if (distractedIntents.Count > 0)
-                gameEvents.Add(new SimpleGameEvent($"{target.Class} loses track of the plan"));
 
             return gameEvents;
         }

@@ -7,12 +7,14 @@ namespace GameCore.Models.CombatActions
 {
     public class Challenge : CombatActionBase
     {
+        public int TauntRounds { get; private set; }
         public int RiposteCount { get; private set; }
         public int RiposteDamage { get; private set; }
 
-        public Challenge(int riposteCount, int riposteDamage)
+        public Challenge(int tauntRounds, int riposteCount, int riposteDamage)
             : base("Challenge")
         {
+            TauntRounds = tauntRounds;
             RiposteCount = riposteCount;
             RiposteDamage = riposteDamage;
         }
@@ -41,9 +43,9 @@ namespace GameCore.Models.CombatActions
 
             var taunted = target.GetCondition<Taunted>();
             if (taunted == null)
-                target.Conditions.Add(new Taunted(actor));
+                target.Conditions.Add(new Taunted(actor, TauntRounds));
             else
-                taunted.Retaunt(actor);
+                taunted.Retaunt(actor, TauntRounds);
 
             var riposte = actor.GetCondition<Riposte>();
             if (riposte == null)

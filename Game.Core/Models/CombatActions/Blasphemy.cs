@@ -3,7 +3,6 @@ using System.Linq;
 using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
-using GameCore.Models.HeroPartyStrategies.Helpers;
 
 namespace GameCore.Models.CombatActions
 {
@@ -11,8 +10,13 @@ namespace GameCore.Models.CombatActions
     {
         private static readonly CharacterClass[] HolyClasses = { CharacterClass.Paladin };
 
-        public Blasphemy()
-            : base("Blasphemy (taunt holy heroes)") { }
+        public int TauntRounds { get; private set; }
+
+        public Blasphemy(int tauntRounds)
+            : base("Blasphemy (taunt holy heroes)")
+        {
+            TauntRounds = tauntRounds;
+        }
 
         public override int GetDamage(Combatant actor, Combatant target) => 0;
 
@@ -40,44 +44,15 @@ namespace GameCore.Models.CombatActions
             {
                 var taunted = holyEnemy.GetCondition<Taunted>();
                 if (taunted == null)
-                    holyEnemy.Conditions.Add(new Taunted(actor));
+                    holyEnemy.Conditions.Add(new Taunted(actor, TauntRounds));
                 else
-                    taunted.Retaunt(actor);
-
-                // TEMPORARY: replace with condition processing during executions
-                var retaliation = FindStrongestAttack(holyEnemy, actor);
-                if (retaliation == null)
-                {
-                    gameEvents.Add(
-                        new SimpleGameEvent(
-                            $"{holyEnemy.Class} is enraged, but has no way to strike back"
-                        )
-                    );
-                    continue;
-                }
-
-                var tauntedIntents = encounter
-                    .Intents.Where(i => i.Actor == holyEnemy && !i.IsExecuted)
-                    .ToList();
-                if (tauntedIntents.Count == 0)
-                    continue;
-
-                foreach (var tauntedIntent in tauntedIntents)
-                {
-                    tauntedIntent.Action = retaliation;
-                    tauntedIntent.Target = actor;
-                }
+                    taunted.Retaunt(actor, TauntRounds);
 
                 gameEvents.Add(
-                    new SimpleGameEvent(
-                        $"{holyEnemy.Class} abandons the plan to punish the {actor.Class}"
-                    )
+                    new SimpleGameEvent($"{holyEnemy.Class} is enraged for {TauntRounds} rounds")
                 );
             }
             return gameEvents;
         }
-
-        private static CombatActionBase FindStrongestAttack(Combatant actor, Combatant target) =>
-            AttackCalculator.FindStrongestAttack(actor, new Combatant[] { target }).Action;
     }
 }
