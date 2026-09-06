@@ -43,6 +43,8 @@ namespace GameCore.Models.CombatActions
                 baseDamage += condition.GetDamageFlatModifier();
 
             var multiplier = 1m;
+            foreach (var condition in actor.Conditions)
+                multiplier *= condition.GetDamageMultiplier();
             foreach (var condition in target.Conditions)
                 multiplier *= condition.GetIncomingDamageMultiplier();
 

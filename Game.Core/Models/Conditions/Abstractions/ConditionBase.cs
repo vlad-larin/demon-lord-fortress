@@ -20,6 +20,12 @@ namespace GameCore.Models.Conditions.Abstractions
         public virtual int GetDamageFlatModifier() => 0;
 
         /// <summary>
+        /// Default damage multiplier is 1 - condition does not change the amount of dealt damage.
+        /// Override this in the conditions that change the dealt damage.
+        /// </summary>
+        public virtual decimal GetDamageMultiplier() => 1;
+
+        /// <summary>
         /// Default damage multiplier is 1 - condition does not change the amount of incoming damage.
         /// Override this in the conditions that change the incoming damage.
         /// </summary>
