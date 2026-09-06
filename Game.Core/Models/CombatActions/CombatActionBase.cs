@@ -55,10 +55,19 @@ namespace GameCore.Models.CombatActions
             foreach (var condition in target.Conditions)
                 actualDamage += condition.GetIncomingDamageFlatModifier(actualDamage);
 
-            var gameEvent = new HpReducedGameEvent(target, actualDamage);
+            var gameEvents = new List<GameEventBase>
+            {
+                new HpReducedGameEvent(target, actualDamage),
+            };
             target.Hp -= actualDamage;
 
-            return new HpReducedGameEvent[] { gameEvent };
+            // Reactions run once the blow has landed, so a counter-attack can depend on
+            // the damage that was actually taken. A snapshot guards against a reaction
+            // that spends itself and drops off the list mid-pass.
+            foreach (var condition in target.Conditions.ToList())
+                gameEvents.AddRange(condition.ReactToIncomingDamage(target, actor, actualDamage));
+
+            return gameEvents;
         }
     }
 }

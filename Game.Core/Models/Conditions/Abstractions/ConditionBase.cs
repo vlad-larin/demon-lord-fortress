@@ -47,6 +47,18 @@ namespace GameCore.Models.Conditions.Abstractions
         public virtual int GetIncomingDamageFlatModifier(int actualDamage) => 0;
 
         /// <summary>
+        /// Default is no reaction. Override this in the conditions that strike back after
+        /// their bearer is hit. Reaction damage is dealt as it stands, without running the
+        /// modifier pipeline again, so two counter-attacking combatants cannot bounce blows
+        /// off each other forever.
+        /// </summary>
+        public virtual IEnumerable<GameEventBase> ReactToIncomingDamage(
+            Combatant bearer,
+            Combatant attacker,
+            int damageTaken
+        ) => new GameEventBase[] { };
+
+        /// <summary>
         /// Return true if you want the condition to be cleared at the end of the round.
         /// </summary>
         public virtual bool ShouldBeRemoved() => false;
