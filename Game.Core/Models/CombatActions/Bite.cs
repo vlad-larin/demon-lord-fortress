@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using GameCore.Extensions;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
-using GameCore.Models.HeroPartyStrategies.Helpers;
+using System;
+using System.Collections.Generic;
 
 namespace GameCore.Models.CombatActions
 {
@@ -49,6 +49,8 @@ namespace GameCore.Models.CombatActions
             gameEvents.AddRange(DealDamage(actor, target, damage));
 
             actor.Hp += Convert.ToInt32(Math.Max(0, Math.Min(actor.MaxHp - actor.Hp, heal)));
+
+            actor.ApplyForRounds<Exposed>(1);
 
             return gameEvents;
         }
