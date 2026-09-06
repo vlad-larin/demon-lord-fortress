@@ -14,6 +14,15 @@ namespace GameCore.Models.Conditions.Abstractions
         ) => new GameEventBase[] { };
 
         /// <summary>
+        /// Default behavior is not to change an incoming intent. Override this in the
+        /// conditions that redirect or deflect what is aimed at their bearer. It runs after
+        /// the actor's own conditions have had their say, so the target it reads is settled.
+        /// </summary>
+        public virtual IEnumerable<GameEventBase> UpdateIncomingIntentBeforeExecution(
+            CombatIntent intent
+        ) => new GameEventBase[] { };
+
+        /// <summary>
         /// Default modifier is 0 - condition does not change the amount of dealt damage.
         /// Override this in the conditions that change the dealt damage.
         /// </summary>

@@ -65,6 +65,17 @@ namespace GameEngine.PlayerActionHandlers
             var gameEvents = new List<GameEventBase>();
             foreach (var condition in intent.Actor.Conditions)
                 gameEvents.AddRange(condition.UpdateIntentBeforeExecution(intent));
+
+            // The actor's own conditions can change who they swing at, so whoever is standing
+            // in the way is only known once that pass is done. Captured before the loop: a
+            // condition here may point the intent somewhere else entirely.
+            var target = intent.Target;
+            if (target == null)
+                return gameEvents;
+
+            foreach (var condition in target.Conditions)
+                gameEvents.AddRange(condition.UpdateIncomingIntentBeforeExecution(intent));
+
             return gameEvents;
         }
 
