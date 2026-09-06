@@ -17,7 +17,7 @@ namespace GameCore.Factories.Combatants
                 Actions = new List<CombatActionBase>()
                 {
                     new SimpleAttack(damage: 1),
-                    new Blasphemy(),
+                    new Blasphemy(tauntRounds: 2),
                     new Ritual(1),
                 },
             };

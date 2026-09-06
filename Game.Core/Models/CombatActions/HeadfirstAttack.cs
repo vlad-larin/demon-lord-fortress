@@ -2,6 +2,7 @@
 using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GameCore.Models.CombatActions
 {
@@ -39,11 +40,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            // HpReducedGameEvent snapshots the HPs of the target, so it has to be built
-            // before the hit lands.
-            gameEvents.Add(new HpReducedGameEvent(target, Damage));
-
-            target.Hp -= Damage;
+            gameEvents.AddRange(DealDamage(actor, target, Damage));
             actor.ApplyForRounds<Exposed>(ExposureRounds);
 
             return gameEvents;

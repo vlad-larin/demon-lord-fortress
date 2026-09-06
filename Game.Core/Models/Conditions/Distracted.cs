@@ -2,5 +2,8 @@
 
 namespace GameCore.Models.Conditions
 {
-    public class Distracted : TimedConditionBase { }
+    public class Distracted : TimedConditionBase
+    {
+        public override decimal GetDamageMultiplier() => 0.5m;
+    }
 }

@@ -3,21 +3,29 @@ using GameCore.Models.Conditions.Abstractions;
 
 namespace GameCore.Models.Conditions
 {
-    public class Warded : ConditionBase
+    public class Warded : TimedConditionBase
     {
-        public int WardRounds { get; private set; }
         public int Durability { get; private set; }
 
         public Warded(int wardRounds, int durability)
         {
-            WardRounds = wardRounds;
+            AddRounds(wardRounds);
             Durability = durability;
         }
 
         internal void RenewWard(int wardRounds, int durability)
         {
-            WardRounds = Convert.ToInt32(Math.Max(wardRounds, WardRounds));
+            AddRounds(wardRounds <= RoundsLeft ? 0 : wardRounds - RoundsLeft);
             Durability += durability;
         }
+
+        public override int GetIncomingDamageFlatModifier(int actualDamage)
+        {
+            var wardedDamage = Math.Clamp(actualDamage, 0, Durability);
+            Durability -= wardedDamage;
+            return -wardedDamage;
+        }
+
+        public override bool ShouldBeRemoved() => base.ShouldBeRemoved() || Durability <= 0;
     }
 }

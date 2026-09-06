@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using GameCore.Models;
 using GameCore.Models.CombatActions;
+using GameCore.Models.Conditions.Abstractions;
 using GameCore.Models.GameEvents;
 using GameCore.PlayerActions;
+using GameEngine.Ai;
 using GameEngine.Models;
 using GameEngine.PlayerActionHandlers.Abstractions;
 
@@ -32,10 +34,8 @@ namespace GameEngine.PlayerActionHandlers
                     continue;
                 }
 
-                // Change intentions due to conditions
-
-                var retargetEvents = HandleMissingTarget(intent); // Retarget impossible targets
-                gameEvents.AddRange(retargetEvents);
+                gameEvents.AddRange(UpdateIntentAccordingToConditions(intent));
+                gameEvents.AddRange(HandleMissingTarget(intent));
 
                 // Execute the action
                 var executionEvents = intent.Action.Execute(intent.Actor, intent.Target, encounter);
@@ -53,10 +53,30 @@ namespace GameEngine.PlayerActionHandlers
                 )
                     break;
             }
+            gameEvents.AddRange(DecayConditions(encounter.Combatants));
 
             GameInstance.Encounter.Phase = EncounterPhase.Resolution;
 
             return new PlayerActionResult(GameInstance, gameEvents);
+        }
+
+        private List<GameEventBase> UpdateIntentAccordingToConditions(CombatIntent intent)
+        {
+            var gameEvents = new List<GameEventBase>();
+            foreach (var condition in intent.Actor.Conditions)
+                gameEvents.AddRange(condition.UpdateIntentBeforeExecution(intent));
+
+            // The actor's own conditions can change who they swing at, so whoever is standing
+            // in the way is only known once that pass is done. Captured before the loop: a
+            // condition here may point the intent somewhere else entirely.
+            var target = intent.Target;
+            if (target == null)
+                return gameEvents;
+
+            foreach (var condition in target.Conditions)
+                gameEvents.AddRange(condition.UpdateIncomingIntentBeforeExecution(intent));
+
+            return gameEvents;
         }
 
         private IEnumerable<GameEventBase> HandleMissingTarget(CombatIntent intent)
@@ -112,6 +132,21 @@ namespace GameEngine.PlayerActionHandlers
             }
 
             return deadCombatants.Select(c => new CombatantDiedGameEvent(c));
+        }
+
+        private IEnumerable<GameEventBase> DecayConditions(List<Combatant> combatants)
+        {
+            foreach (var combatant in combatants)
+            {
+                combatant
+                    .Conditions.Where(c => c is TimedConditionBase)
+                    .Cast<TimedConditionBase>()
+                    .ToList()
+                    .ForEach(c => c.Decay());
+
+                combatant.Conditions.RemoveAll(c => c.ShouldBeRemoved());
+            }
+            return new GameEventBase[0];
         }
     }
 }

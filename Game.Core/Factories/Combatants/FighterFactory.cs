@@ -17,7 +17,7 @@ namespace GameCore.Factories.Combatants
                 {
                     new SimpleAttack(damage: 4),
                     new HeadfirstAttack(damage: 7, exposureRounds: 3),
-                    new Challenge(riposteCount: 2, riposteDamage: 4),
+                    new Challenge(tauntRounds: 2, riposteCount: 2, riposteDamage: 4),
                 },
             };
     }

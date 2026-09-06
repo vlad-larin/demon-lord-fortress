@@ -15,5 +15,7 @@ namespace GameCore.Models.Conditions
         {
             Strength += strength;
         }
+
+        public override int GetDamageFlatModifier() => Strength;
     }
 }

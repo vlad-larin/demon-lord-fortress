@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using GameCore.Extensions;
+using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
+using System;
+using System.Collections.Generic;
 
 namespace GameCore.Models.CombatActions
 {
@@ -45,10 +46,11 @@ namespace GameCore.Models.CombatActions
                 : Damage;
             var heal = Math.Ceiling(decimal.Divide(damage, 2m));
 
-            gameEvents.Add(new HpReducedGameEvent(target, damage));
+            gameEvents.AddRange(DealDamage(actor, target, damage));
 
-            target.Hp -= damage;
             actor.Hp += Convert.ToInt32(Math.Max(0, Math.Min(actor.MaxHp - actor.Hp, heal)));
+
+            actor.ApplyForRounds<Exposed>(1);
 
             return gameEvents;
         }
