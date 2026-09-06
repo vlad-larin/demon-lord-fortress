@@ -127,21 +127,15 @@ namespace GameEngine.PlayerActionHandlers
         {
             foreach (var combatant in combatants)
             {
-                foreach (var condition in combatant.Conditions)
-                {
-                    if (condition is TimedConditionBase timedCondition)
-                    {
-                        timedCondition.Decay();
-                    }
-                }
+                combatant
+                    .Conditions.Where(c => c is TimedConditionBase)
+                    .Cast<TimedConditionBase>()
+                    .ToList()
+                    .ForEach(c => c.Decay());
 
                 combatant.Conditions.RemoveAll(c => c.ShouldBeRemoved());
-
-                    c is TimedConditionBase timedCondition && timedConditi
-                    on.RoundsLeft <= 0
-                );
             }
-            return new CombatantDiedGameEvent[0];
+            return new GameEventBase[0];
         }
     }
 }

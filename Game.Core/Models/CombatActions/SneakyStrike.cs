@@ -29,7 +29,7 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.AddRange(target.InflictDamage(Damage));
+            gameEvents.AddRange(DealDamage(actor, target, Damage));
             return gameEvents;
         }
     }

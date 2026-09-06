@@ -2,6 +2,7 @@
 using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GameCore.Models.CombatActions
 {
@@ -39,7 +40,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            gameEvents.AddRange(target.InflictDamage(Damage));
+            gameEvents.AddRange(DealDamage(actor, target, Damage));
             actor.ApplyForRounds<Exposed>(ExposureRounds);
 
             return gameEvents;

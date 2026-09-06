@@ -46,9 +46,7 @@ namespace GameCore.Models.CombatActions
                 : Damage;
             var heal = Math.Ceiling(decimal.Divide(damage, 2m));
 
-            gameEvents.Add(new HpReducedGameEvent(target, damage));
-
-            gameEvents.AddRange(target.InflictDamage(damage));
+            gameEvents.AddRange(DealDamage(actor, target, damage));
 
             actor.Hp += Convert.ToInt32(Math.Max(0, Math.Min(actor.MaxHp - actor.Hp, heal)));
 
