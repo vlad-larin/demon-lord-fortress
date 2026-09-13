@@ -22,6 +22,9 @@ namespace GameEngine.Extensions
                         NewScenarioNames = GameScenarios.Helpers.ScenarioRoster.GetAvailableNames(),
                     };
 
+                case GameMode.TowerClimbing:
+                    return new TowerClimbingState(gameEvents) { Tower = gameInstance.Tower };
+
                 case GameMode.Encounter:
                     return new EncounterState(gameEvents) { Encounter = gameInstance.Encounter };
 

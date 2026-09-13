@@ -10,5 +10,12 @@
         Cultist,
         BoneKnight,
         Vampire,
+        GiantRat,
+        AcidSlime,
+        Ghoul,
+        Gargoyle,
+        Bodyguard,
+        Lieutenant,
+        DemonLord,
     }
 }

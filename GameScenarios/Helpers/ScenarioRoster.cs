@@ -31,6 +31,7 @@ namespace GameScenarios.Helpers
             }
 
             Register("Test combat scenario", () => new TestCombatScenario());
+            Register("Test tower climbing scenario", () => new TowerClimbingScenario());
 
             return items;
         }
