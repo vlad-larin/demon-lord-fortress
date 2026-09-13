@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.9.12112.369 stable
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameCore", "Game.Core\GameCore.csproj", "{568EA40E-7D9A-4FF3-9D8F-778248A9ABA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameCore", "GameCore\GameCore.csproj", "{568EA40E-7D9A-4FF3-9D8F-778248A9ABA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameConsoleApp", "Game.Console\GameConsoleApp.csproj", "{3475CAA0-642A-4FD3-A7CC-7AB89061E40D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameConsoleApp", "GameConsole\GameConsoleApp.csproj", "{3475CAA0-642A-4FD3-A7CC-7AB89061E40D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine", "Game.Engine\GameEngine.csproj", "{148244A4-6AC4-4CCE-9BB0-362161513275}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine", "GameEngine\GameEngine.csproj", "{148244A4-6AC4-4CCE-9BB0-362161513275}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameScenarios", "GameScenarios\GameScenarios.csproj", "{A98B4114-933D-4F0A-954F-56F973336A4D}"
 EndProject
