@@ -41,6 +41,9 @@ namespace GameConsoleApp.StateHandlers
                 case EncounterPhase.Resolution:
                     RenderResolutionPrompt();
                     break;
+                case EncounterPhase.Debriefing:
+                    RenderDebriefingPrompt();
+                    break;
                 default:
                     throw new NotImplementedException($"Unknown phase: {encounter.Phase}");
             }
@@ -59,6 +62,8 @@ namespace GameConsoleApp.StateHandlers
                     return ProcessKeyAtPlanningPhase(key);
                 case EncounterPhase.Resolution:
                     return ProcessKeyAtResolutionPhase(key);
+                case EncounterPhase.Debriefing:
+                    return ProcessKeyAtDebriefingPhase(key);
                 default:
                     throw new NotImplementedException(
                         $"[EncounterModeHandler] Unexpected phase: {encounter.Phase}"
@@ -485,6 +490,63 @@ namespace GameConsoleApp.StateHandlers
                 {
                     ActionType = GameModeHandlerActionType.Execute,
                     Action = new FinishEncounterRoundResolutionAction(),
+                };
+            }
+            return GameModeHandlerResponse.NoAction();
+        }
+        #endregion
+
+        #region Debriefing
+        private void RenderDebriefingPrompt()
+        {
+            var outcome = State.Encounter.Outcome;
+
+            RenderFrameStart();
+            RenderFrameLine(RenderOutcomeHeadline(outcome));
+            RenderFrameLine(outcome.Reason);
+            RenderFrameLine();
+            RenderBattleSides();
+
+            RenderFrameDivider();
+
+            RenderFrameLine("AFTERMATH");
+            RenderFrameLine();
+            if (outcome.Consequences.Count == 0)
+                RenderFrameLine("* Nothing to report yet");
+            else
+                foreach (var consequence in outcome.Consequences)
+                    RenderFrameLine($"* {consequence}");
+            RenderFrameLine();
+
+            RenderFrameLine("[Space]: Conclude the encounter");
+            RenderFrameFinish();
+        }
+
+        /// <summary>
+        /// The encounter is read from where the player sits, which is the demon lord's throne.
+        /// </summary>
+        private static string RenderOutcomeHeadline(EncounterOutcome outcome)
+        {
+            switch (outcome.Winner)
+            {
+                case ConflictSide.DemonLord:
+                    return "VICTORY";
+                case ConflictSide.Heroes:
+                    return "DEFEAT";
+                default:
+                    return "NOBODY WON";
+            }
+        }
+
+        private GameModeHandlerResponse ProcessKeyAtDebriefingPhase(ConsoleKeyInfo key)
+        {
+            var option = key.KeyChar.ToString().ToUpperInvariant();
+            if (option == " ")
+            {
+                return new GameModeHandlerResponse
+                {
+                    ActionType = GameModeHandlerActionType.Execute,
+                    Action = new FinishEncounterDebriefingAction(),
                 };
             }
             return GameModeHandlerResponse.NoAction();

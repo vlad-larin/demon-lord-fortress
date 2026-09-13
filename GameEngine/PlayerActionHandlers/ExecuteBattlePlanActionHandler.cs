@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameCore.Extensions;
 using GameCore.Models;
 using GameCore.Models.CombatActions;
 using GameCore.Models.Conditions.Abstractions;
@@ -46,12 +47,14 @@ namespace GameEngine.PlayerActionHandlers
                 var deathEvents = CheckForDeadCombatants();
                 gameEvents.AddRange(deathEvents);
 
-                // Check if any side has combatants alive
-                if (
-                    !encounter.Combatants.Any(c => c.Side == ConflictSide.Heroes)
-                    || !encounter.Combatants.Any(c => c.Side == ConflictSide.DemonLord)
-                )
+                // The round stops the moment the encounter is decided, so nothing is swung
+                // at a fight that is already over.
+                var outcome = encounter.CheckEndConditions();
+                if (outcome != null)
+                {
+                    encounter.Outcome = outcome;
                     break;
+                }
             }
             gameEvents.AddRange(DecayConditions(encounter.Combatants));
 

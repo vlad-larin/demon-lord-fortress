@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameCore.Extensions;
 using GameCore.Models;
 using GameCore.Models.GameEvents;
 using GameCore.PlayerActions;
@@ -18,24 +19,23 @@ namespace GameEngine.PlayerActionHandlers
             FinishEncounterRoundResolutionAction playerAction
         )
         {
-            // TODO: Check if one side has won and go to the debriefing if yes
-            var victory = CheckVictoryConditions();
-            if (victory != null)
-            {
-                var gameEvents = new List<GameEventBase>();
-                gameEvents.Add(new SimpleGameEvent("Victory condition achieved"));
-                var encounter = GameInstance.Encounter;
-                encounter.Phase = EncounterPhase.Debriefing;
-                return new PlayerActionResult(GameInstance, gameEvents);
-            }
-            else
-            {
-                var ai = new EncounterAi(GameInstance);
-                var gameEvents = ai.SetHeroPartyBattlePlan();
-                return new PlayerActionResult(GameInstance, gameEvents);
-            }
-        }
+            var encounter = GameInstance.Encounter;
+            var gameEvents = new List<GameEventBase>();
 
-        private object CheckVictoryConditions() => null; // placeholder
+            // The battle plan may have decided the encounter mid-round already; conditions
+            // that can only be judged once a full round is behind them get their say here.
+            var outcome = encounter.Outcome ?? encounter.CheckEndConditions();
+            if (outcome != null)
+            {
+                encounter.Outcome = outcome;
+                encounter.Phase = EncounterPhase.Debriefing;
+                gameEvents.Add(new SimpleGameEvent($"The encounter is over. {outcome.Reason}"));
+                return new PlayerActionResult(GameInstance, gameEvents);
+            }
+
+            var ai = new EncounterAi(GameInstance);
+            gameEvents.AddRange(ai.SetHeroPartyBattlePlan());
+            return new PlayerActionResult(GameInstance, gameEvents);
+        }
     }
 }
