@@ -16,7 +16,7 @@ namespace GameCore.Models.Conditions
             intent.Target = null;
             return new GameEventBase[]
             {
-                new SimpleGameEvent($"{intent.Actor.Class} is stunned and can not act"),
+                new SimpleGameEvent($"{intent.Actor.DisplayName} is stunned and can not act"),
             };
         }
     }

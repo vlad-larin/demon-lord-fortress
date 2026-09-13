@@ -31,7 +31,7 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new SimpleGameEvent($"{actor.Class} stuns {target.Class}!"));
+            gameEvents.Add(new SimpleGameEvent($"{actor.DisplayName} stuns {target.DisplayName}!"));
 
             target.ApplyForRounds<Stunned>(StunRounds);
 

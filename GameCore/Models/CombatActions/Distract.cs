@@ -32,7 +32,9 @@ namespace GameCore.Models.CombatActions
         {
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
-                new SimpleGameEvent($"{actor.Class} draws the attention of {target.Class} away")
+                new SimpleGameEvent(
+                    $"{actor.DisplayName} draws the attention of {target.DisplayName} away"
+                )
             );
 
             target.ApplyForRounds<Distracted>(DistractRounds);

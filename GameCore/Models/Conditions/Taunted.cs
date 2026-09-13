@@ -48,7 +48,7 @@ namespace GameCore.Models.Conditions
             {
                 gameEvents.Add(
                     new SimpleGameEvent(
-                        $"{intent.Actor.Class} is taunted by {TauntedBy.Class} and changes the target!"
+                        $"{intent.Actor.DisplayName} is taunted by {TauntedBy.DisplayName} and changes the target!"
                     )
                 );
                 intent.Target = TauntedBy;
@@ -61,7 +61,7 @@ namespace GameCore.Models.Conditions
             {
                 gameEvents.Add(
                     new SimpleGameEvent(
-                        $"{intent.Actor.Class} is enraged, but has no way to strike back"
+                        $"{intent.Actor.DisplayName} is enraged, but has no way to strike back"
                     )
                 );
                 return gameEvents;
@@ -73,7 +73,7 @@ namespace GameCore.Models.Conditions
             );
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{intent.Actor.Class} abandons the plan to punish the {TauntedBy.Class}"
+                    $"{intent.Actor.DisplayName} abandons the plan to punish {TauntedBy.DisplayName}"
                 )
             );
             intent.Action = retaliation.Action;

@@ -128,7 +128,7 @@ namespace GameCore.Models.HeroPartyStrategies
 
             foreach (var hero in heroes.ToArray())
             {
-                events.Add(new SimpleGameEvent($"{hero.Class} could not find a good attack"));
+                events.Add(new SimpleGameEvent($"{hero.DisplayName} could not find a good attack"));
             }
 
             Encounter.Intents = intents;

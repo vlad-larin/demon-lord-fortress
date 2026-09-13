@@ -5,7 +5,7 @@
         public Combatant Actor { get; }
 
         public CombatantDiedGameEvent(Combatant actor)
-            : base($"{actor.Class} dies!")
+            : base($"{actor.DisplayName} dies!")
         {
             Actor = actor;
         }

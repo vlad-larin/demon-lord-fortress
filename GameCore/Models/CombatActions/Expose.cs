@@ -33,7 +33,7 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{actor.Class} finds a weak spot: {target.Class} is exposed for {ExposeRounds} rounds"
+                    $"{actor.DisplayName} finds a weak spot: {target.DisplayName} is exposed for {ExposeRounds} rounds"
                 )
             );
 

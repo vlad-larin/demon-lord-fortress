@@ -37,7 +37,7 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{actor.Class} challenges {target.Class}, promising {RiposteCount} ripostes of {RiposteDamage} damage"
+                    $"{actor.DisplayName} challenges {target.DisplayName}, promising {RiposteCount} ripostes of {RiposteDamage} damage"
                 )
             );
 

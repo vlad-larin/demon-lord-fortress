@@ -30,7 +30,9 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new SimpleGameEvent($"{actor.Class} blasts {target.Class}!"));
+            gameEvents.Add(
+                new SimpleGameEvent($"{actor.DisplayName} blasts {target.DisplayName}!")
+            );
             gameEvents.AddRange(DealDamage(actor, target, Damage));
             return gameEvents;
         }

@@ -30,7 +30,9 @@ namespace GameEngine.PlayerActionHandlers
                 if (!encounter.Combatants.Contains(intent.Actor))
                 {
                     gameEvents.Add(
-                        new SimpleGameEvent($"Skipped {intent.Actor.Class} because they are dead")
+                        new SimpleGameEvent(
+                            $"Skipped {intent.Actor.DisplayName} because they are dead"
+                        )
                     );
                     continue;
                 }
@@ -100,7 +102,7 @@ namespace GameEngine.PlayerActionHandlers
                     encounter.HeroPartyStrategy.RetargetAction(intent);
                     gameEvents.Add(
                         new SimpleGameEvent(
-                            $"Retargeted. {intent.Actor.Class}: {intent.Action.Name} -> {intent.Target.Class}"
+                            $"Retargeted. {intent.Actor.DisplayName}: {intent.Action.Name} -> {intent.Target.DisplayName}"
                         )
                     );
                     break;
@@ -112,7 +114,7 @@ namespace GameEngine.PlayerActionHandlers
                     intent.Target = null;
                     gameEvents.Add(
                         new SimpleGameEvent(
-                            $"{intent.Actor.Class} wastes their action because target became unavailable"
+                            $"{intent.Actor.DisplayName} wastes their action because target became unavailable"
                         )
                     );
                     break;

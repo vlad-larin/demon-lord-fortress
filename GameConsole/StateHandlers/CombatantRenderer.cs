@@ -1,4 +1,5 @@
-﻿using GameCore.Models;
+﻿using GameCore.Extensions;
+using GameCore.Models;
 
 namespace GameConsoleApp.StateHandlers
 {
@@ -11,7 +12,17 @@ namespace GameConsoleApp.StateHandlers
     internal static class CombatantRenderer
     {
         public static string Render(Combatant combatant) =>
-            $"{combatant.Class} {RenderHp(combatant)}";
+            $"{combatant.DisplayName} {RenderHp(combatant)}";
+
+        /// <summary>
+        /// The roster form, where the kind matters as much as the individual: a proper
+        /// name is followed by the class it belongs to, and everyone else already shows
+        /// their class as their name.
+        /// </summary>
+        public static string RenderWithClass(Combatant combatant) =>
+            string.IsNullOrEmpty(combatant.Name)
+                ? Render(combatant)
+                : $"{combatant.Name}, {combatant.Class.GetDisplayName()} {RenderHp(combatant)}";
 
         /// <summary>
         /// A planned action, with both of its participants rendered the usual way.

@@ -1,8 +1,8 @@
-﻿using GameCore.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using GameCore.Extensions;
 using GameCore.Models.Conditions;
 using GameCore.Models.GameEvents;
-using System;
-using System.Collections.Generic;
 
 namespace GameCore.Models.CombatActions
 {
@@ -38,7 +38,9 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new SimpleGameEvent($"{actor.Class} bites {target.Class}'s neck!"));
+            gameEvents.Add(
+                new SimpleGameEvent($"{actor.DisplayName} bites {target.DisplayName}'s neck!")
+            );
 
             var targetIsWounded = target.Hp < target.MaxHp;
             var damage = targetIsWounded

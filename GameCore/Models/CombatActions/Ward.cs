@@ -35,7 +35,7 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{actor.Class} wraps {target.Class} in a ward of {Durability} points for {WardRounds} rounds"
+                    $"{actor.DisplayName} wraps {target.DisplayName} in a ward of {Durability} points for {WardRounds} rounds"
                 )
             );
 
