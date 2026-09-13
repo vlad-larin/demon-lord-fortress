@@ -47,7 +47,9 @@ namespace GameCore.Models.Conditions
             }
 
             gameEvents.Add(
-                new SimpleGameEvent($"{ProtectedBy.Class} takes the blow meant for {ward.Class}")
+                new SimpleGameEvent(
+                    $"{ProtectedBy.DisplayName} takes the blow meant for {ward.DisplayName}"
+                )
             );
             intent.Target = ProtectedBy;
 

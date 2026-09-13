@@ -34,7 +34,9 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new SimpleGameEvent($"{actor.Class} shouts unspeakable blasphemies!"));
+            gameEvents.Add(
+                new SimpleGameEvent($"{actor.DisplayName} shouts unspeakable blasphemies!")
+            );
 
             var holyEnemies = GetEnemies(actor, encounter.Combatants)
                 .Where(c => HolyClasses.Contains(c.Class))
@@ -49,7 +51,9 @@ namespace GameCore.Models.CombatActions
                     taunted.Retaunt(actor, TauntRounds);
 
                 gameEvents.Add(
-                    new SimpleGameEvent($"{holyEnemy.Class} is enraged for {TauntRounds} rounds")
+                    new SimpleGameEvent(
+                        $"{holyEnemy.DisplayName} is enraged for {TauntRounds} rounds"
+                    )
                 );
             }
             return gameEvents;

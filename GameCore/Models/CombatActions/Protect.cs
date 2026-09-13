@@ -35,13 +35,13 @@ namespace GameCore.Models.CombatActions
 
             if (target == null || target == actor)
             {
-                gameEvents.Add(new SimpleGameEvent($"{actor.Class} braces for the attack"));
+                gameEvents.Add(new SimpleGameEvent($"{actor.DisplayName} braces for the attack"));
                 return gameEvents;
             }
 
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{actor.Class} steps in front of {target.Class} for {ProtectRounds} rounds"
+                    $"{actor.DisplayName} steps in front of {target.DisplayName} for {ProtectRounds} rounds"
                 )
             );
 

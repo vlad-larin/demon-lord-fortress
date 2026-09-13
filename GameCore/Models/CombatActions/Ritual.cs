@@ -33,7 +33,7 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{actor.Class} channels a dark ritual and grows {Strength} more terrifying"
+                    $"{actor.DisplayName} channels a dark ritual and grows {Strength} more terrifying"
                 )
             );
 

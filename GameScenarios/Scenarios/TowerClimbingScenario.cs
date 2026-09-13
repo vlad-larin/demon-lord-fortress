@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using GameCore.Factories.Combatants;
+using GameCore.Helpers;
 using GameCore.Models;
 
 namespace GameScenarios.Scenarios
@@ -11,20 +13,27 @@ namespace GameScenarios.Scenarios
     /// </summary>
     public class TowerClimbingScenario : ScenarioBase
     {
-        public override GameInstance StartScenario() =>
-            new GameInstance
+        public override GameInstance StartScenario()
+        {
+            var floors = new List<Floor>
+            {
+                BuildDungeonsFloor(),
+                BuildInnerSanctumFloor(),
+                BuildThroneFloor(),
+            };
+
+            // A floor is the unit the Demon Lord deploys across, so guardians are numbered
+            // floor wide: a rat that reinforces the room next door does not walk in sharing
+            // a name with the rats already fighting there.
+            foreach (var floor in floors)
+                CombatantNaming.NumberDuplicates(floor.Rooms.SelectMany(room => room.Guardians));
+
+            return new GameInstance
             {
                 GameMode = GameMode.TowerClimbing,
-                Tower = new Tower
-                {
-                    Floors = new List<Floor>
-                    {
-                        BuildDungeonsFloor(),
-                        BuildInnerSanctumFloor(),
-                        BuildThroneFloor(),
-                    },
-                },
+                Tower = new Tower { Floors = floors },
             };
+        }
 
         /// <summary>
         /// Floor 1: the crude working guts of the fortress, held by whatever is cheap
@@ -104,12 +113,22 @@ namespace GameScenarios.Scenarios
                     BuildRoom(
                         "Throne Room",
                         capacity: 3,
-                        DemonLordFactory.BuildCombatant(),
-                        LieutenantFactory.BuildCombatant(),
-                        BodyguardFactory.BuildCombatant()
+                        Named(DemonLordFactory.BuildCombatant(), "Malgrath the Unmade"),
+                        Named(LieutenantFactory.BuildCombatant(), "Sister Vaine"),
+                        Named(BodyguardFactory.BuildCombatant(), "Korrun")
                     ),
                 },
             };
+
+        /// <summary>
+        /// The three in the throne room are characters rather than stock monsters, so they
+        /// go by their own names instead of their class.
+        /// </summary>
+        private static Combatant Named(Combatant combatant, string name)
+        {
+            combatant.Name = name;
+            return combatant;
+        }
 
         private static Room BuildRoom(string type, int capacity, params Combatant[] guardians) =>
             new Room

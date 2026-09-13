@@ -34,9 +34,11 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 heal > 0
-                    ? new SimpleGameEvent($"{actor.Class} heals {target.Class} for {heal} HP")
+                    ? new SimpleGameEvent(
+                        $"{actor.DisplayName} heals {target.DisplayName} for {heal} HP"
+                    )
                     : new SimpleGameEvent(
-                        $"{actor.Class} lays hands on {target.Class}, but they are already whole"
+                        $"{actor.DisplayName} lays hands on {target.DisplayName}, but they are already whole"
                     )
             );
 

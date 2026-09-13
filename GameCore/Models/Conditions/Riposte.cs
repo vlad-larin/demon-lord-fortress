@@ -53,7 +53,9 @@ namespace GameCore.Models.Conditions
 
             RiposteCount--;
             gameEvents.Add(
-                new SimpleGameEvent($"{bearer.Class} ripostes and cuts {attacker.Class} back!")
+                new SimpleGameEvent(
+                    $"{bearer.DisplayName} ripostes and cuts {attacker.DisplayName} back!"
+                )
             );
             gameEvents.Add(new HpReducedGameEvent(attacker, RiposteDamage));
             attacker.Hp -= RiposteDamage;

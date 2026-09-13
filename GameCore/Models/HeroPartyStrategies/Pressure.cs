@@ -69,7 +69,9 @@ namespace GameCore.Models.HeroPartyStrategies
             foreach (var hero in heroes.ToArray())
             {
                 events.Add(
-                    new SimpleGameEvent($"{hero.Class} could not find a good pressure approach")
+                    new SimpleGameEvent(
+                        $"{hero.DisplayName} could not find a good pressure approach"
+                    )
                 );
             }
 

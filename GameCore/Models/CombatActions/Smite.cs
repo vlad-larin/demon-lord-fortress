@@ -30,7 +30,7 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new SimpleGameEvent($"{actor.Class} calls down holy wrath!"));
+            gameEvents.Add(new SimpleGameEvent($"{actor.DisplayName} calls down holy wrath!"));
             gameEvents.AddRange(DealDamage(actor, target, HolyDamage));
             return gameEvents;
         }

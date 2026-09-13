@@ -8,7 +8,7 @@
         public int FinalHp { get; }
 
         public HpReducedGameEvent(Combatant actor, int hpReduction)
-            : base($"{actor.Class}'s HPs reduced by {hpReduction}!")
+            : base($"{actor.DisplayName}'s HPs reduced by {hpReduction}!")
         {
             Actor = actor;
             InitialHp = actor.Hp;

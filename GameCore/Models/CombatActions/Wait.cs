@@ -24,7 +24,7 @@ namespace GameCore.Models.CombatActions
         )
         {
             var gameEvents = new List<GameEventBase>();
-            gameEvents.Add(new SimpleGameEvent($"{actor.Class} does nothing"));
+            gameEvents.Add(new SimpleGameEvent($"{actor.DisplayName} does nothing"));
 
             return gameEvents;
         }

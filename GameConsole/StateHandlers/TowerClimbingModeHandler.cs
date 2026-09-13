@@ -61,7 +61,7 @@ namespace GameConsoleApp.StateHandlers
             );
 
             foreach (var guardian in guardians)
-                RenderFrameLine($"    * {CombatantRenderer.Render(guardian)}");
+                RenderFrameLine($"    * {CombatantRenderer.RenderWithClass(guardian)}");
 
             RenderFrameLine();
         }

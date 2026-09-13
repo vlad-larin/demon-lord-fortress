@@ -36,7 +36,7 @@ namespace GameCore.Models.CombatActions
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(
                 new SimpleGameEvent(
-                    $"{actor.Class} charges in headfirst and stays exposed for {ExposureRounds} rounds"
+                    $"{actor.DisplayName} charges in headfirst and stays exposed for {ExposureRounds} rounds"
                 )
             );
 
