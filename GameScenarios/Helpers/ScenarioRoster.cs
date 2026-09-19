@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameCore.Models.HeroObjectives;
 using GameScenarios.Scenarios;
 
 namespace GameScenarios.Helpers
@@ -31,7 +32,18 @@ namespace GameScenarios.Helpers
             }
 
             Register("Test combat scenario", () => new TestCombatScenario());
-            Register("Test tower climbing scenario", () => new TowerClimbingScenario());
+            Register(
+                "Test tower climbing: slay the Demon Lord",
+                () => new TowerClimbingScenario(new SlayTheDemonLord())
+            );
+            Register(
+                "Test tower climbing: rescue the princess",
+                () => new TowerClimbingScenario(new RescueThePrincess())
+            );
+            Register(
+                "Test tower climbing: seize the forbidden lore",
+                () => new TowerClimbingScenario(new SeizeTheForbiddenLore())
+            );
 
             return items;
         }

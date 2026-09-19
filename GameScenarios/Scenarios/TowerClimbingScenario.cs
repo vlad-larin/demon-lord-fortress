@@ -1,18 +1,29 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using GameCore.Factories.Combatants;
 using GameCore.Helpers;
 using GameCore.Models;
+using GameCore.Models.HeroObjectives.Abstractions;
+using GameCore.Models.RoomProperties;
+using GameCore.Models.RoomProperties.Abstractions;
 
 namespace GameScenarios.Scenarios
 {
     /// <summary>
-    /// A three floor tower to look at: two floors of three rooms the heroes could pick
-    /// between, and a throne room on top where the Demon Lord waits with his retinue.
-    /// The climb itself is not wired up yet - this scenario only lays out the fortress.
+    /// A three floor tower with a party climbing it: two floors of rooms the heroes pick
+    /// between, and a throne room on top where the Demon Lord waits with his retinue. What
+    /// the party is after is handed in, because the objective decides how far up they come
+    /// and which room they walk into once they get there.
     /// </summary>
     public class TowerClimbingScenario : ScenarioBase
     {
+        private readonly HeroObjectiveBase objective;
+
+        public TowerClimbingScenario(HeroObjectiveBase objective)
+        {
+            this.objective = objective;
+        }
+
         public override GameInstance StartScenario()
         {
             var floors = new List<Floor>
@@ -28,16 +39,38 @@ namespace GameScenarios.Scenarios
             foreach (var floor in floors)
                 CombatantNaming.NumberDuplicates(floor.Rooms.SelectMany(room => room.Guardians));
 
+            var heroes = BuildHeroParty();
+            CombatantNaming.NumberDuplicates(heroes);
+
             return new GameInstance
             {
                 GameMode = GameMode.TowerClimbing,
                 Tower = new Tower { Floors = floors },
+                Expedition = new Expedition
+                {
+                    Heroes = heroes,
+                    Objective = objective,
+                    CurrentFloorNumber = 1,
+                },
             };
         }
 
         /// <summary>
+        /// The four that walked in the front door, one of each trade the kingdom could
+        /// spare.
+        /// </summary>
+        private static List<Combatant> BuildHeroParty() =>
+            new List<Combatant>
+            {
+                PaladinFactory.BuildCombatant(),
+                FighterFactory.BuildCombatant(),
+                WizardFactory.BuildCombatant(),
+                RogueFactory.BuildCombatant(),
+            };
+
+        /// <summary>
         /// Floor 1: the crude working guts of the fortress, held by whatever is cheap
-        /// to lose.
+        /// to lose - and, in the oubliette, holding what the fortress took.
         /// </summary>
         private static Floor BuildDungeonsFloor() =>
             new Floor
@@ -66,6 +99,16 @@ namespace GameScenarios.Scenarios
                         GiantRatFactory.BuildCombatant(),
                         GiantRatFactory.BuildCombatant()
                     ),
+                    Holding(
+                        BuildRoom(
+                            "Oubliette",
+                            capacity: 3,
+                            GhoulFactory.BuildCombatant(),
+                            CultistFactory.BuildCombatant(),
+                            GiantRatFactory.BuildCombatant()
+                        ),
+                        new HoldsThePrincess()
+                    ),
                 },
             };
 
@@ -85,12 +128,15 @@ namespace GameScenarios.Scenarios
                         CultistFactory.BuildCombatant(),
                         CultistFactory.BuildCombatant()
                     ),
-                    BuildRoom(
-                        "Library",
-                        capacity: 3,
-                        CultistFactory.BuildCombatant(),
-                        CultistFactory.BuildCombatant(),
-                        GargoyleFactory.BuildCombatant()
+                    Holding(
+                        BuildRoom(
+                            "Library",
+                            capacity: 3,
+                            CultistFactory.BuildCombatant(),
+                            CultistFactory.BuildCombatant(),
+                            GargoyleFactory.BuildCombatant()
+                        ),
+                        new HoldsTheForbiddenLore()
                     ),
                     BuildRoom(
                         "Armory",
@@ -110,12 +156,15 @@ namespace GameScenarios.Scenarios
             {
                 Rooms = new List<Room>
                 {
-                    BuildRoom(
-                        "Throne Room",
-                        capacity: 3,
-                        Named(DemonLordFactory.BuildCombatant(), "Malgrath the Unmade"),
-                        Named(LieutenantFactory.BuildCombatant(), "Sister Vaine"),
-                        Named(BodyguardFactory.BuildCombatant(), "Korrun")
+                    Holding(
+                        BuildRoom(
+                            "Throne Room",
+                            capacity: 3,
+                            Named(DemonLordFactory.BuildCombatant(), "Malgrath the Unmade"),
+                            Named(LieutenantFactory.BuildCombatant(), "Sister Vaine"),
+                            Named(BodyguardFactory.BuildCombatant(), "Korrun")
+                        ),
+                        new HoldsTheThrone()
                     ),
                 },
             };
@@ -130,13 +179,21 @@ namespace GameScenarios.Scenarios
             return combatant;
         }
 
+        /// <summary>
+        /// What the room keeps, which is what makes it worth climbing to.
+        /// </summary>
+        private static Room Holding(Room room, params RoomPropertyBase[] properties)
+        {
+            room.Properties.AddRange(properties);
+            return room;
+        }
+
         private static Room BuildRoom(string type, int capacity, params Combatant[] guardians) =>
             new Room
             {
                 Type = type,
                 Capacity = capacity,
                 Guardians = new List<Combatant>(guardians),
-                Properties = new List<RoomProperty>(),
             };
     }
 }
