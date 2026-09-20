@@ -73,3 +73,8 @@ appsettings.Local.json
 # Azure / publish profiles
 PublishProfiles/
 *.publishsettings
+
+# Local working notes for AI assistants - internal, not for publication
+/CLAUDE.md
+/docs/architecture.md
+/docs/extending.md

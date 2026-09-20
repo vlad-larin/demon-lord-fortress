@@ -23,7 +23,11 @@ namespace GameEngine.Extensions
                     };
 
                 case GameMode.TowerClimbing:
-                    return new TowerClimbingState(gameEvents) { Tower = gameInstance.Tower };
+                    return new TowerClimbingState(gameEvents)
+                    {
+                        Tower = gameInstance.Tower,
+                        Expedition = gameInstance.Expedition,
+                    };
 
                 case GameMode.Encounter:
                     return new EncounterState(gameEvents) { Encounter = gameInstance.Encounter };

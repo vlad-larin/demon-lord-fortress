@@ -51,6 +51,10 @@ namespace GameEngine.Helpers
                 GameMode.Title,
                 gameInstance => new TitleActionHandler(gameInstance)
             );
+            Register<AdvanceExpeditionAction>(
+                GameMode.TowerClimbing,
+                gameInstance => new AdvanceExpeditionActionHandler(gameInstance)
+            );
             Register<ComposeHeroPartyPlanAction>(
                 GameMode.Encounter,
                 gameInstance => new ComposeHeroPartyPlanActionHandler(gameInstance)
