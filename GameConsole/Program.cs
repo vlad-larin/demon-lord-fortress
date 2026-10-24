@@ -78,7 +78,8 @@ namespace GameConsoleApp
                     ((TowerClimbingModeHandler)stateHandler).RenderState((TowerClimbingState)state);
                     break;
                 case GameMode.Map:
-                    MapRenderer.RenderState(state);
+                    stateHandler ??= new MapModeHandler((MapState)state);
+                    ((MapModeHandler)stateHandler).RenderState((MapState)state);
                     break;
                 default:
                     throw new NotImplementedException(
@@ -100,6 +101,8 @@ namespace GameConsoleApp
                     return ((EncounterModeHandler)stateHandler).ProcessKey(key);
                 case GameMode.TowerClimbing:
                     return ((TowerClimbingModeHandler)stateHandler).ProcessKey(key);
+                case GameMode.Map:
+                    return ((MapModeHandler)stateHandler).ProcessKey(key);
                 default:
 
                     throw new NotImplementedException(

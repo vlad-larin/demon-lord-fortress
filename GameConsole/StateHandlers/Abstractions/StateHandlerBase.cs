@@ -40,7 +40,7 @@ namespace GameConsoleApp.StateHandlers.Abstractions
             return false;
         }
 
-        private const int FrameContentWidth = 80;
+        protected const int FrameContentWidth = 80;
 
         protected void RenderFrameStart() =>
             Console.WriteLine($"╔═{"".PadRight(FrameContentWidth, '═')}═╗");

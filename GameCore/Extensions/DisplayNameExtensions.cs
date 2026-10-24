@@ -3,37 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GameCore.Attributes;
-using GameCore.Models;
 
 namespace GameCore.Extensions
 {
-    public static class CharacterClassExtensions
+    public static class DisplayNameExtensions
     {
-        private static readonly Dictionary<CharacterClass, string> DisplayNames =
-            BuildDisplayNames();
-
         /// <summary>
-        /// The name a player should see for this class. Every value carries one, so a new
-        /// class that forgets its attribute is caught the first time anything is rendered
-        /// rather than leaking an identifier into the UI.
+        /// The name a player should see for this enum value. Every value of an enum that
+        /// reaches the UI carries one, so a new value that forgets its attribute is caught
+        /// the first time anything is rendered rather than leaking an identifier into the UI.
         /// </summary>
-        public static string GetDisplayName(this CharacterClass characterClass) =>
-            DisplayNames.TryGetValue(characterClass, out var displayName)
+        public static string GetDisplayName<TEnum>(this TEnum value)
+            where TEnum : struct, Enum =>
+            DisplayNames<TEnum>.ByValue.TryGetValue(value, out var displayName)
                 ? displayName
                 : throw new InvalidOperationException(
-                    $"[CharacterClassExtensions] Unknown character class: {characterClass}"
+                    $"[DisplayNameExtensions] Unknown {typeof(TEnum).Name}: {value}"
                 );
 
-        private static Dictionary<CharacterClass, string> BuildDisplayNames() =>
-            typeof(CharacterClass)
+        /// <summary>
+        /// Read once per enum type, the first time one of its values is shown.
+        /// </summary>
+        private static class DisplayNames<TEnum>
+            where TEnum : struct, Enum
+        {
+            public static readonly Dictionary<TEnum, string> ByValue = typeof(TEnum)
                 .GetFields(BindingFlags.Public | BindingFlags.Static)
                 .ToDictionary(
-                    field => (CharacterClass)field.GetValue(null),
+                    field => (TEnum)field.GetValue(null),
                     field =>
                         field.GetCustomAttribute<DisplayNameAttribute>()?.Name
                         ?? throw new InvalidOperationException(
-                            $"[CharacterClassExtensions] Character class '{field.Name}' has no {nameof(DisplayNameAttribute)}"
+                            $"[DisplayNameExtensions] {typeof(TEnum).Name} '{field.Name}' has no {nameof(DisplayNameAttribute)}"
                         )
                 );
+        }
     }
 }

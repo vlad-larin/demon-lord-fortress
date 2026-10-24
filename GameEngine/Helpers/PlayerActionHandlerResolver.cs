@@ -51,6 +51,10 @@ namespace GameEngine.Helpers
                 GameMode.Title,
                 gameInstance => new TitleActionHandler(gameInstance)
             );
+            Register<SkipTurnAction>(
+                GameMode.Map,
+                gameInstance => new SkipTurnActionHandler(gameInstance)
+            );
             Register<AdvanceExpeditionAction>(
                 GameMode.TowerClimbing,
                 gameInstance => new AdvanceExpeditionActionHandler(gameInstance)

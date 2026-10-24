@@ -12,5 +12,15 @@ namespace GameCore.Models
         public Expedition Expedition { get; set; }
 
         public Encounter Encounter { get; set; }
+
+        /// <summary>
+        /// The kingdom around the tower, or null in scenarios that never leave the tower.
+        /// </summary>
+        public WorldMap WorldMap { get; set; }
+
+        /// <summary>
+        /// The campaign turn on the world map, counted from one.
+        /// </summary>
+        public int Turn { get; set; }
     }
 }
