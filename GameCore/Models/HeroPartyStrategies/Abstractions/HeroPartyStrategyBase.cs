@@ -21,5 +21,13 @@ namespace GameCore.Models.HeroPartyStrategies.Abstractions
 
         protected List<Combatant> GetParty() =>
             Encounter.Combatants.Where(c => c.Side == ConflictSide.Heroes).ToList();
+
+        /// <summary>
+        /// Hands the finished party plan over to the encounter. Every hero opens a clash of
+        /// their own, in the order the strategy wrote them; deciding which of those clashes
+        /// to step into is the demon lord's half of the plan.
+        /// </summary>
+        protected void SetBattlePlan(IEnumerable<CombatIntent> intents) =>
+            Encounter.BattlePlan = intents.Select(intent => new CombatStep(intent)).ToList();
     }
 }

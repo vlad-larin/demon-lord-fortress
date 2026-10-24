@@ -131,7 +131,7 @@ namespace GameCore.Models.HeroPartyStrategies
                 events.Add(new SimpleGameEvent($"{hero.DisplayName} could not find a good attack"));
             }
 
-            Encounter.Intents = intents;
+            SetBattlePlan(intents);
 
             return events;
         }

@@ -29,7 +29,21 @@ namespace GameCore.Models
         public int MaxHp { get; set; }
         public int PerceivedDanger { get; set; }
         public List<CombatActionBase> Actions { get; set; } = new List<CombatActionBase>();
+
+        /// <summary>
+        /// What the combatant carries into the clash being resolved. Everything that reads
+        /// conditions - damage modifiers, retargeting, reactions - reads this list, and
+        /// nothing writes to it while a clash is in flight.
+        /// </summary>
         public List<ConditionBase> Conditions { get; set; } = new List<ConditionBase>();
+
+        /// <summary>
+        /// Conditions inflicted during the clash being resolved, waiting to come into force.
+        /// They are held back so that a stun landed in the same breath as the blow it was
+        /// meant to stop arrives too late - see
+        /// <see cref="GameCore.Extensions.CombatantConditionExtensions.Inflict"/>.
+        /// </summary>
+        public List<ConditionBase> InflictedConditions { get; set; } = new List<ConditionBase>();
 
         /// <summary>
         /// The single name everything player facing uses - the battle log, the roster, the

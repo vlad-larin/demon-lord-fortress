@@ -13,10 +13,15 @@ namespace GameCore.Models.Conditions
             Durability = durability;
         }
 
-        internal void RenewWard(int wardRounds, int durability)
+        /// <summary>
+        /// Wards pile their strength together, and the longer of the two decides how long
+        /// the whole thing holds.
+        /// </summary>
+        public override void Absorb(ConditionBase incoming)
         {
-            AddRounds(wardRounds <= RoundsLeft ? 0 : wardRounds - RoundsLeft);
-            Durability += durability;
+            var renewal = (Warded)incoming;
+            AddRounds(renewal.RoundsLeft - RoundsLeft);
+            Durability += renewal.Durability;
         }
 
         public override int GetIncomingDamageFlatModifier(int actualDamage)

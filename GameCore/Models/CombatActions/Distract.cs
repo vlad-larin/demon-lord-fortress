@@ -37,7 +37,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            target.ApplyForRounds<Distracted>(DistractRounds);
+            target.InflictForRounds<Distracted>(DistractRounds);
 
             return gameEvents;
         }

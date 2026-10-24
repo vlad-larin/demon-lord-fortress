@@ -45,11 +45,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            var protection = target.GetCondition<Protected>();
-            if (protection == null)
-                target.Conditions.Add(new Protected(actor, ProtectRounds));
-            else
-                protection.RenewProtection(actor, ProtectRounds);
+            target.Inflict(new Protected(actor, ProtectRounds));
 
             return gameEvents;
         }

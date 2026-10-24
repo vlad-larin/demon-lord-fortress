@@ -44,11 +44,7 @@ namespace GameCore.Models.CombatActions
 
             foreach (var holyEnemy in holyEnemies)
             {
-                var taunted = holyEnemy.GetCondition<Taunted>();
-                if (taunted == null)
-                    holyEnemy.Conditions.Add(new Taunted(actor, TauntRounds));
-                else
-                    taunted.Retaunt(actor, TauntRounds);
+                holyEnemy.Inflict(new Taunted(actor, TauntRounds));
 
                 gameEvents.Add(
                     new SimpleGameEvent(

@@ -52,7 +52,7 @@ namespace GameCore.Models.CombatActions
 
             actor.Hp += Convert.ToInt32(Math.Max(0, Math.Min(actor.MaxHp - actor.Hp, heal)));
 
-            actor.ApplyForRounds<Exposed>(1);
+            actor.InflictForRounds<Exposed>(1);
 
             return gameEvents;
         }

@@ -41,11 +41,7 @@ namespace GameCore.Models.CombatActions
             // condition processing is in place.
             actor.PerceivedDanger += Strength;
 
-            var strengthened = actor.GetCondition<Strengthened>();
-            if (strengthened == null)
-                actor.Conditions.Add(new Strengthened(Strength));
-            else
-                strengthened.AddStrength(Strength);
+            actor.Inflict(new Strengthened(Strength));
 
             return gameEvents;
         }

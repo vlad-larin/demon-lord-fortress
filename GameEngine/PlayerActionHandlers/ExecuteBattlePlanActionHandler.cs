@@ -24,30 +24,10 @@ namespace GameEngine.PlayerActionHandlers
             var gameEvents = new List<GameEventBase>();
             gameEvents.Add(new SimpleGameEvent("Batlle plan execution has started"));
 
-            foreach (var intent in encounter.Intents)
+            for (var stepNumber = 1; stepNumber <= encounter.BattlePlan.Count; stepNumber++)
             {
-                // Check if actor is still alive
-                if (!encounter.Combatants.Contains(intent.Actor))
-                {
-                    gameEvents.Add(
-                        new SimpleGameEvent(
-                            $"Skipped {intent.Actor.DisplayName} because they are dead"
-                        )
-                    );
-                    continue;
-                }
-
-                gameEvents.AddRange(UpdateIntentAccordingToConditions(intent));
-                gameEvents.AddRange(HandleMissingTarget(intent));
-
-                // Execute the action
-                var executionEvents = intent.Action.Execute(intent.Actor, intent.Target, encounter);
-                gameEvents.AddRange(executionEvents);
-                intent.IsExecuted = true;
-
-                // Remove dead combatants
-                var deathEvents = CheckForDeadCombatants();
-                gameEvents.AddRange(deathEvents);
+                gameEvents.Add(new SimpleGameEvent($"Step {stepNumber}:"));
+                gameEvents.AddRange(ResolveStep(encounter.BattlePlan[stepNumber - 1]));
 
                 // The round stops the moment the encounter is decided, so nothing is swung
                 // at a fight that is already over.
@@ -63,6 +43,47 @@ namespace GameEngine.PlayerActionHandlers
             GameInstance.Encounter.Phase = EncounterPhase.Resolution;
 
             return new PlayerActionResult(GameInstance, gameEvents);
+        }
+
+        /// <summary>
+        /// One clash, resolved as a single simultaneous exchange. Everyone in it acts on the
+        /// board as it stood when the clash opened - the same conditions, the same living
+        /// combatants - and only once every intent has been carried out do the conditions
+        /// they inflicted come into force and the hit points that ran out count as death.
+        /// The intents are walked in order because code has to run in some order; nothing
+        /// inside a clash is meant to depend on that order.
+        /// </summary>
+        private IEnumerable<GameEventBase> ResolveStep(CombatStep step)
+        {
+            var encounter = GameInstance.Encounter;
+            var gameEvents = new List<GameEventBase>();
+
+            foreach (var intent in step.Intents)
+            {
+                // Only someone struck down in an earlier clash is out of this one.
+                if (!encounter.Combatants.Contains(intent.Actor))
+                {
+                    gameEvents.Add(
+                        new SimpleGameEvent(
+                            $"Skipped {intent.Actor.DisplayName} because they are dead"
+                        )
+                    );
+                    continue;
+                }
+
+                gameEvents.AddRange(UpdateIntentAccordingToConditions(intent));
+                gameEvents.AddRange(HandleMissingTarget(intent));
+
+                gameEvents.AddRange(intent.Action.Execute(intent.Actor, intent.Target, encounter));
+                intent.IsExecuted = true;
+            }
+
+            foreach (var combatant in encounter.Combatants)
+                combatant.SettleInflictedConditions();
+
+            gameEvents.AddRange(CheckForDeadCombatants());
+
+            return gameEvents;
         }
 
         private List<GameEventBase> UpdateIntentAccordingToConditions(CombatIntent intent)
@@ -135,6 +156,12 @@ namespace GameEngine.PlayerActionHandlers
                 encounter.Combatants.Remove(deadCombatant);
                 encounter.DeadCombatants.Add(deadCombatant);
             }
+
+            // A condition can hang on whoever granted it, and the fallen grant nothing any
+            // more. Those lapse here rather than at the end of the round, so the clashes
+            // still to come do not read a shield nobody is holding.
+            foreach (var combatant in encounter.Combatants)
+                combatant.Conditions.RemoveAll(c => c.ShouldBeRemoved());
 
             return deadCombatants.Select(c => new CombatantDiedGameEvent(c));
         }

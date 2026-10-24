@@ -11,10 +11,11 @@ namespace GameCore.Models.Conditions
             Strength = strength;
         }
 
-        internal void AddStrength(int strength)
-        {
-            Strength += strength;
-        }
+        /// <summary>
+        /// Rituals build on each other; the strength simply adds up.
+        /// </summary>
+        public override void Absorb(ConditionBase incoming) =>
+            Strength += ((Strengthened)incoming).Strength;
 
         public override int GetDamageFlatModifier() => Strength;
     }

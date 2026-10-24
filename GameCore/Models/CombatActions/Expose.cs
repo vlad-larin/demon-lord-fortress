@@ -37,7 +37,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            target.ApplyForRounds<Exposed>(ExposeRounds);
+            target.InflictForRounds<Exposed>(ExposeRounds);
 
             return gameEvents;
         }
