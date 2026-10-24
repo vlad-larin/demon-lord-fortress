@@ -41,7 +41,7 @@ namespace GameCore.Models.CombatActions
             );
 
             gameEvents.AddRange(DealDamage(actor, target, Damage));
-            actor.ApplyForRounds<Exposed>(ExposureRounds);
+            actor.InflictForRounds<Exposed>(ExposureRounds);
 
             return gameEvents;
         }

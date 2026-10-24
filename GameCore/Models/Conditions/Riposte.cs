@@ -19,16 +19,18 @@ namespace GameCore.Models.Conditions
         /// <summary>
         /// Counter attacks pile up, the hardest one sets the damage.
         /// </summary>
-        internal void RenewRiposte(int riposteCount, int riposteDamage)
+        public override void Absorb(ConditionBase incoming)
         {
-            RiposteCount += riposteCount;
-            RiposteDamage = Math.Max(riposteDamage, RiposteDamage);
+            var promise = (Riposte)incoming;
+            RiposteCount += promise.RiposteCount;
+            RiposteDamage = Math.Max(promise.RiposteDamage, RiposteDamage);
         }
 
         /// <summary>
         /// A promised counter attack is spent on whoever draws blood. The damage is the one
         /// that was promised: it is not fed back through the modifier pipeline, so a riposte
-        /// cannot be sharpened, warded off, or answered with another riposte.
+        /// cannot be sharpened, warded off, or answered with another riposte. A fatal blow
+        /// is answered like any other: nobody falls until their clash is over.
         /// </summary>
         public override IEnumerable<GameEventBase> ReactToIncomingDamage(
             Combatant bearer,
@@ -43,13 +45,6 @@ namespace GameCore.Models.Conditions
 
             if (attacker.Side == bearer.Side)
                 return gameEvents;
-
-            if (bearer.Hp <= 0 || attacker.Hp <= 0)
-            {
-                // A counter attack needs someone still standing to throw it, and someone
-                // still standing to receive it.
-                return gameEvents;
-            }
 
             RiposteCount--;
             gameEvents.Add(

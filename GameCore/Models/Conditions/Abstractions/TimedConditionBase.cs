@@ -4,7 +4,7 @@ namespace GameCore.Models.Conditions.Abstractions
 {
     /// <summary>
     /// A condition whose only state is how much longer it lasts. Inflict and prolong these
-    /// through <see cref="GameCore.Extensions.CombatantConditionExtensions.ApplyForRounds"/>
+    /// through <see cref="GameCore.Extensions.CombatantConditionExtensions.InflictForRounds"/>
     /// so a combatant never ends up carrying two of the same kind.
     /// </summary>
     public abstract class TimedConditionBase : ConditionBase
@@ -12,6 +12,13 @@ namespace GameCore.Models.Conditions.Abstractions
         private bool _grantedThisRound;
 
         public int RoundsLeft { get; private set; }
+
+        /// <summary>
+        /// A second dose of a duration-only condition simply keeps its bearer under it for
+        /// longer.
+        /// </summary>
+        public override void Absorb(ConditionBase incoming) =>
+            AddRounds(((TimedConditionBase)incoming).RoundsLeft);
 
         internal void AddRounds(int rounds)
         {

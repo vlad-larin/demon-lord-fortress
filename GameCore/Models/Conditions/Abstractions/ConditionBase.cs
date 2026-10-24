@@ -59,6 +59,15 @@ namespace GameCore.Models.Conditions.Abstractions
         ) => new GameEventBase[] { };
 
         /// <summary>
+        /// Folds a second helping of the same kind into this one, so a combatant never ends
+        /// up carrying two of a condition. Called when a freshly inflicted condition comes
+        /// into force and finds one already in place; the argument is always of this
+        /// condition's own type. Abstract on purpose - a condition that can be inflicted
+        /// twice has to say what the second one means.
+        /// </summary>
+        public abstract void Absorb(ConditionBase incoming);
+
+        /// <summary>
         /// Return true if you want the condition to be cleared at the end of the round.
         /// </summary>
         public virtual bool ShouldBeRemoved() => false;

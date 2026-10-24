@@ -20,11 +20,11 @@ namespace GameCore.Models.Conditions
         /// <summary>
         /// The latest provocation is the one that sticks, keeping whichever rage lasts longer.
         /// </summary>
-        internal void Retaunt(Combatant tauntedBy, int tauntRounds)
+        public override void Absorb(ConditionBase incoming)
         {
-            TauntedBy = tauntedBy;
-            if (tauntRounds > RoundsLeft)
-                AddRounds(tauntRounds - RoundsLeft);
+            var provocation = (Taunted)incoming;
+            TauntedBy = provocation.TauntedBy;
+            AddRounds(provocation.RoundsLeft - RoundsLeft);
         }
 
         public override IEnumerable<GameEventBase> UpdateIntentBeforeExecution(CombatIntent intent)

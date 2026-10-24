@@ -39,11 +39,7 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            var warded = target.GetCondition<Warded>();
-            if (warded == null)
-                target.Conditions.Add(new Warded(wardRounds: WardRounds, durability: Durability));
-            else
-                warded.RenewWard(wardRounds: WardRounds, durability: Durability);
+            target.Inflict(new Warded(wardRounds: WardRounds, durability: Durability));
 
             return gameEvents;
         }

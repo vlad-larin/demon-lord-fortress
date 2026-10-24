@@ -11,7 +11,13 @@ namespace GameCore.Models
         public IHeroPartyStrategy HeroPartyStrategy { get; set; }
         public List<Combatant> Combatants { get; set; } = new List<Combatant>();
         public List<Combatant> DeadCombatants { get; set; } = new List<Combatant>();
-        public List<CombatIntent> Intents { get; set; } = new List<CombatIntent>();
+
+        /// <summary>
+        /// The round as an ordered list of clashes. Sides do not take turns intent by
+        /// intent: a clash resolves as a single simultaneous exchange, and the player's
+        /// choice is which clash each monster steps into.
+        /// </summary>
+        public List<CombatStep> BattlePlan { get; set; } = new List<CombatStep>();
 
         /// <summary>
         /// Everything that can stop this encounter. A wiped side always does, so it is here

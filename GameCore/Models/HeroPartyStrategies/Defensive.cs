@@ -114,7 +114,7 @@ namespace GameCore.Models.HeroPartyStrategies
                 );
             }
 
-            Encounter.Intents = intents;
+            SetBattlePlan(intents);
 
             return events;
         }

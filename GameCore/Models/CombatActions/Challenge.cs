@@ -41,19 +41,8 @@ namespace GameCore.Models.CombatActions
                 )
             );
 
-            var taunted = target.GetCondition<Taunted>();
-            if (taunted == null)
-                target.Conditions.Add(new Taunted(actor, TauntRounds));
-            else
-                taunted.Retaunt(actor, TauntRounds);
-
-            var riposte = actor.GetCondition<Riposte>();
-            if (riposte == null)
-                actor.Conditions.Add(
-                    new Riposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage)
-                );
-            else
-                riposte.RenewRiposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage);
+            target.Inflict(new Taunted(actor, TauntRounds));
+            actor.Inflict(new Riposte(riposteCount: RiposteCount, riposteDamage: RiposteDamage));
 
             return gameEvents;
         }

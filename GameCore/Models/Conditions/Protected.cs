@@ -15,18 +15,22 @@ namespace GameCore.Models.Conditions
         }
 
         /// <summary>
-        /// The newest protection takes over.
+        /// The newest protection takes over: whoever stepped in last is the one standing
+        /// there, and the longer of the two watches is how long they stand.
         /// </summary>
-        internal void RenewProtection(Combatant protectedBy, int protectRounds)
+        public override void Absorb(ConditionBase incoming)
         {
-            ProtectedBy = protectedBy;
-            AddRounds(protectRounds - RoundsLeft);
+            var renewal = (Protected)incoming;
+            ProtectedBy = renewal.ProtectedBy;
+            AddRounds(renewal.RoundsLeft - RoundsLeft);
         }
 
         public override IEnumerable<GameEventBase> UpdateIncomingIntentBeforeExecution(
             CombatIntent intent
         )
         {
+            // Nobody who is out of the fight is still carrying this condition: a protector
+            // who falls takes it with them the moment the clash they fell in is resolved.
             var gameEvents = new List<GameEventBase>();
             var ward = intent.Target;
 
@@ -38,13 +42,6 @@ namespace GameCore.Models.Conditions
 
             if (intent.Action.GetDamage(intent.Actor, ward) <= 0)
                 return gameEvents;
-
-            if (ward.Hp <= 0 || ProtectedBy.Hp <= 0)
-            {
-                // Nobody left to shield, or nobody left to do the shielding. A blow aimed at
-                // a fallen ward is the caller's problem to retarget, the same as any other.
-                return gameEvents;
-            }
 
             gameEvents.Add(
                 new SimpleGameEvent(

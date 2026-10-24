@@ -101,8 +101,6 @@ namespace GameConsoleApp.StateHandlers
         #region Planning
         private void RenderPlanningPrompt()
         {
-            var encounter = State.Encounter;
-
             RenderFrameStart();
 
             RenderFrameLine("BATTLE PLANNING");
@@ -112,11 +110,12 @@ namespace GameConsoleApp.StateHandlers
             RenderFrameDivider();
 
             RenderFrameLine("BATTLE PLAN");
+            RenderFrameLine("A step happens all at once: everyone in it acts before anyone falls.");
+            RenderFrameLine(
+                "One monster to a step; those who do not fit act after the plan runs out."
+            );
             RenderFrameLine();
-            foreach (var intent in encounter.Intents)
-            {
-                RenderFrameLine($"* {CombatantRenderer.RenderIntent(intent)}");
-            }
+            RenderBattlePlan();
             RenderFrameLine();
 
             switch (innerState)
@@ -140,6 +139,32 @@ namespace GameConsoleApp.StateHandlers
             }
         }
         #endregion
+
+        /// <summary>
+        /// The plan as the round will actually run it: an ordered list of clashes, with
+        /// everything inside one clash happening at the same moment.
+        /// </summary>
+        private void RenderBattlePlan()
+        {
+            var battlePlan = State.Encounter.BattlePlan;
+            if (battlePlan.Count == 0)
+            {
+                RenderFrameLine("* Nothing is planned");
+                return;
+            }
+
+            for (var stepIndex = 0; stepIndex < battlePlan.Count; stepIndex++)
+            {
+                RenderFrameLine($"STEP {stepIndex + 1}");
+                foreach (var intent in battlePlan[stepIndex].Intents)
+                    RenderFrameLine($"  * {CombatantRenderer.RenderIntent(intent)}");
+            }
+        }
+
+        private bool IsAssigned(Combatant monster) =>
+            State.Encounter.BattlePlan.Any(step =>
+                step.Intents.Any(intent => intent.Actor == monster)
+            );
 
         private Combatant[] GetHeroes() =>
             State.Encounter.Combatants.Where(x => x.Side == ConflictSide.Heroes).ToArray();
@@ -208,9 +233,9 @@ namespace GameConsoleApp.StateHandlers
             for (int i = 0; i < monsters.Length; i++)
             {
                 var monster = monsters[i];
-                var isAssigned = State.Encounter.Intents.Any(intent => intent.Actor == monster);
                 RenderFrameLine(
-                    $"[{i + 1}]: {CombatantRenderer.Render(monster)}{(isAssigned ? " (assigned)" : "")}"
+                    $"[{RenderOptionLabel(i)}]: {CombatantRenderer.Render(monster)}"
+                        + $"{(IsAssigned(monster) ? " (assigned)" : "")}"
                 );
             }
             RenderFrameLine();
@@ -230,13 +255,10 @@ namespace GameConsoleApp.StateHandlers
                     Action = new ExecuteBattlePlanAction(),
                 };
 
-            if (
-                int.TryParse(option, out var optionNumber)
-                && optionNumber > 0
-                && optionNumber <= GetMonsters().Length
-            )
+            var monsters = GetMonsters();
+            if (TryReadOption(key, monsters.Length, out var monsterIndex))
             {
-                selectedMonster = GetMonsters()[optionNumber - 1];
+                selectedMonster = monsters[monsterIndex];
                 innerState = InnerState.ChooseAction;
             }
             return GameModeHandlerResponse.NoAction();
@@ -255,7 +277,7 @@ namespace GameConsoleApp.StateHandlers
             var actions = selectedMonster.Actions;
             for (int i = 0; i < actions.Count; i++)
             {
-                RenderFrameLine($"[{i + 1}]: {actions[i].Name}");
+                RenderFrameLine($"[{RenderOptionLabel(i)}]: {actions[i].Name}");
             }
             RenderFrameLine();
 
@@ -265,20 +287,14 @@ namespace GameConsoleApp.StateHandlers
 
         private GameModeHandlerResponse ProcessKeyAtPlanningPhaseChooseAction(ConsoleKeyInfo key)
         {
-            var option = key.KeyChar.ToString().ToUpperInvariant();
-
             if (key.Key == ConsoleKey.Escape)
             {
                 selectedMonster = null;
                 innerState = InnerState.ChooseMonster;
             }
-            else if (
-                int.TryParse(option, out var optionNumber)
-                && optionNumber > 0
-                && optionNumber <= selectedMonster.Actions.Count
-            )
+            else if (TryReadOption(key, selectedMonster.Actions.Count, out var actionIndex))
             {
-                selectedAction = selectedMonster.Actions[optionNumber - 1];
+                selectedAction = selectedMonster.Actions[actionIndex];
                 innerState = InnerState.ChooseActionTarget;
             }
 
@@ -302,7 +318,9 @@ namespace GameConsoleApp.StateHandlers
 
             for (int i = 0; i < targets.Count; i++)
             {
-                RenderFrameLine($"[{i + 1}]: {CombatantRenderer.Render(targets[i])}");
+                RenderFrameLine(
+                    $"[{RenderOptionLabel(i)}]: {CombatantRenderer.Render(targets[i])}"
+                );
             }
             RenderFrameLine();
 
@@ -314,25 +332,22 @@ namespace GameConsoleApp.StateHandlers
             ConsoleKeyInfo key
         )
         {
-            var option = key.KeyChar.ToString().ToUpperInvariant();
-
             if (key.Key == ConsoleKey.Escape)
             {
                 selectedAction = null;
                 innerState = InnerState.ChooseAction;
+                return GameModeHandlerResponse.NoAction();
             }
-            else if (int.TryParse(option, out var optionNumber) && optionNumber > 0)
-            {
-                var targets = selectedAction.GetValidTargets(
-                    selectedMonster,
-                    State.Encounter.Combatants
-                );
 
-                if (optionNumber <= targets.Count)
-                {
-                    selectedTarget = targets[optionNumber - 1];
-                    innerState = InnerState.ChooseActionPosition;
-                }
+            var targets = selectedAction.GetValidTargets(
+                selectedMonster,
+                State.Encounter.Combatants
+            );
+
+            if (TryReadOption(key, targets.Count, out var targetIndex))
+            {
+                selectedTarget = targets[targetIndex];
+                innerState = InnerState.ChooseActionPosition;
             }
 
             return GameModeHandlerResponse.NoAction();
@@ -346,41 +361,26 @@ namespace GameConsoleApp.StateHandlers
             RenderFrameLine($"MONSTER: {CombatantRenderer.Render(selectedMonster)}");
             RenderFrameLine($"ACTION: {selectedAction.Name}");
             RenderFrameLine($"TARGET: {CombatantRenderer.Render(selectedTarget)}");
-            RenderFrameLine("CHOOSE INSERT POSITION");
+            RenderFrameLine("CHOOSE WHEN TO ACT");
             RenderFrameLine();
 
-            var availableSlots = GetAvailableSlots();
-            var renderedSlots = new HashSet<IntentSlot>();
-            for (var i = 0; i < State.Encounter.Intents.Count; i++)
+            // Every clash of the plan is offered under its own index, and the plan's length
+            // is the one past the end - the same numbering ProcessKey reads back.
+            var battlePlan = State.Encounter.BattlePlan;
+            for (var stepIndex = 0; stepIndex < battlePlan.Count; stepIndex++)
             {
-                var intent = State.Encounter.Intents[i];
-                var availableSlot = availableSlots.SingleOrDefault(x => x.Index == i);
-                if (availableSlot != null)
-                {
-                    if (availableSlot.Intent == null)
-                    {
-                        RenderFrameLine(
-                            $"[{availableSlots.IndexOf(availableSlot) + 1}] SLOT AVAILABLE"
-                        );
-                    }
-                    else
-                    {
-                        RenderFrameLine(
-                            $"[{availableSlots.IndexOf(availableSlot) + 1}] {CombatantRenderer.RenderIntent(intent)}"
-                        );
-                    }
-                    renderedSlots.Add(availableSlot);
-                }
-                if (intent.Actor.Side == ConflictSide.Heroes)
-                {
-                    RenderFrameLine($"* {CombatantRenderer.RenderIntent(intent)}");
-                }
-            }
+                RenderFrameLine($"STEP {stepIndex + 1}");
+                foreach (var intent in battlePlan[stepIndex].Intents)
+                    RenderFrameLine($"  * {CombatantRenderer.RenderIntent(intent)}");
 
-            foreach (var availableSlot in availableSlots.Where(s => !renderedSlots.Contains(s)))
-            {
-                RenderFrameLine($"[{availableSlots.IndexOf(availableSlot) + 1}] SLOT AVAILABLE");
+                RenderFrameLine(
+                    $"  [{RenderOptionLabel(stepIndex)}] ACT IN THIS STEP{RenderDisplaced(battlePlan[stepIndex])}"
+                );
             }
+            RenderFrameLine();
+            RenderFrameLine(
+                $"[{RenderOptionLabel(battlePlan.Count)}] A STEP OF ITS OWN, AFTER THE PLAN"
+            );
 
             RenderFrameLine();
             RenderFrameLine("[Esc]: Back to target selection");
@@ -391,82 +391,43 @@ namespace GameConsoleApp.StateHandlers
             ConsoleKeyInfo key
         )
         {
-            var option = key.KeyChar.ToString().ToUpperInvariant();
-
             if (key.Key == ConsoleKey.Escape)
             {
                 selectedTarget = null;
                 innerState = InnerState.ChooseActionTarget;
                 return GameModeHandlerResponse.NoAction();
             }
-            else if (int.TryParse(option, out var optionNumber) && optionNumber > 0)
+
+            // One option per clash, plus the one past the end of the plan.
+            var battlePlan = State.Encounter.BattlePlan;
+            if (!TryReadOption(key, battlePlan.Count + 1, out var stepIndex))
+                return GameModeHandlerResponse.NoAction();
+
+            return new GameModeHandlerResponse()
             {
-                var availableSlots = GetAvailableSlots();
-                if (optionNumber > availableSlots.Count)
-                {
-                    return GameModeHandlerResponse.NoAction();
-                }
-
-                var selectedSlot = availableSlots[optionNumber - 1];
-                return new GameModeHandlerResponse()
-                {
-                    ActionType = GameModeHandlerActionType.Execute,
-                    Action = new InsertCombatActionIntoBattlePlan(
-                        intent: new CombatIntent
-                        {
-                            Actor = selectedMonster,
-                            Action = selectedAction,
-                        },
-                        index: selectedSlot.Index,
-                        actorId: selectedMonster.Id,
-                        targetId: selectedTarget.Id
-                    ),
-                };
-            }
-
-            return GameModeHandlerResponse.NoAction();
+                ActionType = GameModeHandlerActionType.Execute,
+                Action = new InsertCombatActionIntoBattlePlan(
+                    intent: new CombatIntent { Actor = selectedMonster, Action = selectedAction },
+                    stepIndex: stepIndex,
+                    actorId: selectedMonster.Id,
+                    targetId: selectedTarget.Id
+                ),
+            };
         }
 
-        private List<IntentSlot> GetAvailableSlots()
+        /// <summary>
+        /// The warning that taking this clash costs somebody else their orders. The chosen
+        /// monster's own clash says nothing - picking that one just leaves it where it is.
+        /// </summary>
+        private string RenderDisplaced(CombatStep step)
         {
-            var list = new List<IntentSlot>();
-            for (var i = 0; i < State.Encounter.Intents.Count; i++)
-            {
-                var intent = State.Encounter.Intents[i];
-                var previousIntent = i == 0 ? null : State.Encounter.Intents[i - 1];
+            var occupant = step.MonsterIntent;
+            if (occupant == null || occupant.Actor == selectedMonster)
+                return string.Empty;
 
-                if (
-                    intent.Actor.Side == ConflictSide.Heroes
-                    && previousIntent?.Actor.Side == ConflictSide.Heroes
-                )
-                {
-                    list.Add(new IntentSlot(i, null));
-                }
-                else if (intent.Actor.Side == ConflictSide.DemonLord)
-                {
-                    list.Add(new IntentSlot(i, intent));
-                }
-            }
-            list.Add(new IntentSlot(State.Encounter.Intents.Count, null));
-
-            return list;
+            return $", PULLING {occupant.Actor.DisplayName.ToUpperInvariant()} OUT";
         }
 
-        private class IntentSlot
-        {
-            public int Index { get; private set; }
-
-            /// <summary>
-            /// null is for inserts and populated value is for overwriting
-            /// </summary>
-            public CombatIntent Intent { get; private set; }
-
-            public IntentSlot(int index, CombatIntent intent)
-            {
-                Index = index;
-                Intent = intent;
-            }
-        }
         #endregion
 
         #region Resolution
