@@ -943,6 +943,20 @@ These actions generate:
 
 The more disruptive the Demon Lord becomes, the more serious the heroes sent against them become.
 
+## 19.1 Map structure
+
+The map is a **graph of named locations joined by roads** — not a grid.
+
+* One location is the **Tower**; the rest belong to the kingdom: capital, towns, villages, keeps, shrines, mines, forests, swamps, ruins.
+* Roads never cross (a planar graph), and most locations are not directly connected, so reaching a place means choosing a **path** through others.
+* Every location is reachable from the Tower.
+
+Distance and route are what matter on the map: which way an expedition comes, and what lies on its road.
+
+## 19.2 Turns
+
+The world map is played in **turns**. For now the only action is **Skip turn**; evil deeds, hero expeditions setting out, and orders to locations will fill the turn later.
+
 ---
 
 # 20. The Core Campaign Loop

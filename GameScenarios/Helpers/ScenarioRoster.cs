@@ -32,6 +32,7 @@ namespace GameScenarios.Helpers
             }
 
             Register("Test combat scenario", () => new TestCombatScenario());
+            Register("Test world map", () => new WorldMapScenario());
             Register(
                 "Test tower climbing: slay the Demon Lord",
                 () => new TowerClimbingScenario(new SlayTheDemonLord())
